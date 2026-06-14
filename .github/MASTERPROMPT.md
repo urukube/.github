@@ -30,7 +30,7 @@ Use the canonical CNCF names (align with the ecosystem for hiring and literature
 |---|---|---|
 | **Developer Control Plane** | The consumer-facing abstraction / self-service interface | Portal (e.g. Backstage), golden-path templates, service catalog |
 | **Integration & Delivery Plane** | Source, build, artifact, IaC orchestration, and continuous delivery | GitHub (VCS), Spacelift (IaC run + policy), JFrog Artifactory (artifacts/images), ArgoCD (GitOps CD) |
-| **Resource Plane** | The actual clusters and cloud resources handed to tenants | Shared hub cluster + per-BU dev/prod spokes; compute, data, networking |
+| **Resource Plane** | The actual clusters and cloud resources handed to tenants | Shared hub cluster + per-BU dev/prod clusters; compute, data, networking |
 | **Observability Plane** | Org-wide, multi-tenant telemetry | Prometheus/Thanos/Mimir, Grafana, OpenTelemetry, Loki, Tempo |
 | **Security Plane** | Cross-cutting security and governance | Secrets, identity, policy, network security, supply-chain security |
 
@@ -73,7 +73,7 @@ Use the canonical CNCF names (align with the ecosystem for hiring and literature
 
 ### 5. Provisioning evolution
 
-Start with Terraform direct for cluster provisioning. Design the module boundary so you can later migrate cluster lifecycle to a Kubernetes-native control plane (Crossplane or Cluster API — the "management cluster + workload clusters" model) so spokes are provisioned the same GitOps way apps are deployed.
+Start with Terraform direct for cluster provisioning. Design the module boundary so you can later migrate cluster lifecycle to a Kubernetes-native control plane (Crossplane or Cluster API — the "management cluster + workload clusters" model) so BU clusters are provisioned the same GitOps way apps are deployed.
 
 ---
 
@@ -97,7 +97,7 @@ Start with Terraform direct for cluster provisioning. Design the module boundary
 - **Identity:** OIDC + workload identity; SPIFFE/SPIRE for cross-cluster workload identity.
 - **Policy:** Kyverno or OPA/Gatekeeper, admission-enforced (not advisory).
 - **Network:** network policies / a CNI like Cilium; mTLS where warranted.
-- **Supply-chain security** *(the gap most teams add too late):* image signing (cosign/sigstore), SBOM generation, and admission control that rejects unsigned or unprovenanced images at the spoke. Belongs squarely in the security plane.
+- **Supply-chain security** *(the gap most teams add too late):* image signing (cosign/sigstore), SBOM generation, and admission control that rejects unsigned or unprovenanced images at the cluster. Belongs squarely in the security plane.
 
 ---
 
@@ -129,10 +129,10 @@ Shared org-wide backend (Prometheus/Thanos/Mimir + Grafana + OpenTelemetry + Lok
 | Phase | Name | Description |
 |---|---|---|
 | **0** | Foundations | Landing zone (account/BU/env), network hub-spoke (peered VPCs + shared services), identity/SSO + workload identity, Git/IaC repo layout. |
-| **1** | Spine, one BU, end to end *(where we are today)* | Stand up the (future-shared) hub; run the spoke module for dev + prod; ArgoCD registers both spokes; deploy a reference app; promote dev→prod via a Git change. Manual triggers are fine. Prove the loop. |
+| **1** | Spine, one BU, end to end *(where we are today)* | Stand up the shared hub; run the cluster module for dev + prod; ArgoCD registers both clusters; deploy a reference app; promote dev→prod via a Git change. Manual triggers are fine. Prove the loop. |
 | **2** | Productionize resource + delivery | Spacelift running the modules with isolated state and policy-as-code; ApplicationSets; promotion mechanism (Kargo/overlays); Argo Rollouts for prod. |
 | **3** | Shared planes | Org-wide observability with per-tenant scoping; secrets (ESO); admission-enforced policy (Kyverno); supply-chain controls (cosign/SBOM/admission); network policy. |
-| **4** | Self-service portal | Backstage golden path ("request environment" → Spacelift → spoke + registration + repo scaffolding), once 2–3 BUs exist and the golden path is stable. |
+| **4** | Self-service portal | Backstage golden path ("request environment" → Spacelift → cluster + registration + repo scaffolding), once 2–3 BUs exist and the golden path is stable. |
 
 ---
 
@@ -173,9 +173,9 @@ This initiative changes how the org builds and ships software, so address the hu
 
 ## Diagrams to (re)produce on request
 
-1. **Leadership value view** — platform as a product: BUs (cost centers) → platform (golden paths + guardrails) → outcomes; operating-model band (operated by platform team, centrally funded, BUs billed for spokes).
-2. **Topology comparison** — hub-per-BU (3N clusters, duplicated hubs) vs shared hub + per-BU spokes (hub doesn't multiply, only spokes do).
-3. **Complete reference architecture** — five planes as bands (Developer Control → Integration & Delivery → Resource) over a Foundation band (landing zone & network), with Security and Observability as cross-cutting side rails; concrete tooling in each; shared hub orchestrating per-BU dev/prod spokes.
+1. **Leadership value view** — platform as a product: BUs (cost centers) → platform (golden paths + guardrails) → outcomes; operating-model band (operated by platform team, centrally funded, BUs billed for their workload clusters).
+2. **Topology comparison** — hub-per-BU (3N clusters, duplicated hubs) vs shared hub + per-BU clusters (hub doesn't multiply, only BU clusters do).
+3. **Complete reference architecture** — five planes as bands (Developer Control → Integration & Delivery → Resource) over a Foundation band (landing zone & network), with Security and Observability as cross-cutting side rails; concrete tooling in each; shared hub orchestrating per-BU dev/prod clusters.
 4. **Maturity / adoption roadmap** — Phases 0–4 with "today = Phase 1, 1 BU" marker and the message "adoption grows → cost per tenant falls."
 
 ---
