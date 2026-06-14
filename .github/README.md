@@ -30,6 +30,15 @@ The inverse of hub-per-BU, where every new tenant adds a full triple-cluster foo
 block-beta
   columns 1
 
+  block:observability["🔭 OBSERVABILITY PLANE — cross-cutting"]
+    OBS1["Prometheus · Thanos · Mimir"]
+    OBS2["Grafana Dashboards"]
+    OBS3["OpenTelemetry Collector"]
+    OBS4["Loki · Tempo"]
+  end
+
+  space
+
   block:developer["🖥️ DEVELOPER CONTROL PLANE"]
     A["Backstage Portal"]
     B["Golden-path Templates"]
@@ -61,12 +70,41 @@ block-beta
     M["Identity / SSO · Git & IaC layout"]
   end
 
+  space
+
+  block:security["🔒 SECURITY PLANE — cross-cutting"]
+    SEC1["ESO · OIDC · SPIFFE/SPIRE"]
+    SEC2["Kyverno · OPA/Gatekeeper"]
+    SEC3["Cilium · cosign · SBOM"]
+  end
+
   developer --> delivery
   delivery --> resource
   resource --> foundation
+
+  classDef obsClass   fill:#EDE9FE,stroke:#7C3AED,color:#3730A3
+  classDef devClass   fill:#DBEAFE,stroke:#2563EB,color:#1E3A8A
+  classDef delivClass fill:#D1FAE5,stroke:#059669,color:#064E3B
+  classDef resClass   fill:#FEF9C3,stroke:#CA8A04,color:#713F12
+  classDef foundClass fill:#F1F5F9,stroke:#475569,color:#1E293B
+  classDef secClass   fill:#FFE4E6,stroke:#E11D48,color:#881337
+
+  class OBS1,OBS2,OBS3,OBS4 obsClass
+  class A,B,C devClass
+  class D,E,F,G delivClass
+  class H,I,J resClass
+  class K,L,M foundClass
+  class SEC1,SEC2,SEC3 secClass
+
+  style observability fill:#EDE9FE,stroke:#7C3AED,color:#3730A3
+  style developer     fill:#DBEAFE,stroke:#2563EB,color:#1E3A8A
+  style delivery      fill:#D1FAE5,stroke:#059669,color:#064E3B
+  style resource      fill:#FEF9C3,stroke:#CA8A04,color:#713F12
+  style foundation    fill:#F1F5F9,stroke:#475569,color:#1E293B
+  style security      fill:#FFE4E6,stroke:#E11D48,color:#881337
 ```
 
-> Security (ESO · OIDC · Kyverno · Cilium · cosign · SBOM) and Observability (Prometheus · Thanos · Grafana · OTel · Loki · Tempo) are **cross-cutting** — they span all planes.
+> Observability and Security are **cross-cutting** — shown as top/bottom bands to reflect that they span all three core planes.
 
 ---
 
