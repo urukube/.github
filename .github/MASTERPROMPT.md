@@ -41,25 +41,22 @@ Use the canonical CNCF names (align with the ecosystem for hiring and literature
 ### 2. Two-level structure (do not conflate)
 
 1. A **global platform layer** that exists once for the whole org: the developer control plane, the org-wide observability backend, the org-wide security/policy backbone, and the CI/CD machinery. This is the standing platform the platform team operates.
-2. A **per-tenant topology** that gets handed out when a BU asks: the hub-spoke cluster set. The Terraform module produces this; observability and security are org-wide planes each tenant plugs into, not re-stood-up per BU.
+2. A **per-BU topology** that gets handed out when a BU asks: a dedicated hub cluster + dev and prod clusters, all within the BU's own cost center and account. Each BU's hub is owned by that BU's cost center; observability and security are org-wide planes each hub plugs into, not re-stood-up per BU.
 
 ---
 
-### 3. Topology: ONE shared org-wide hub + per-BU spokes (NOT a hub per BU)
+### 3. Topology: Hub-per-BU
 
-**Decision:** A single shared hub (a management/fleet-control cluster) orchestrates per-BU spokes. Each BU gets dedicated dev and prod spokes. The hub runs no business workload — only orchestration (ArgoCD fleet control, addon controllers, optionally Crossplane/Cluster API).
+**Decision:** Each BU gets a dedicated hub cluster (ArgoCD fleet control, addon controllers) plus dedicated dev and prod clusters — all within its own cloud account and cost center. No BU shares a control plane with another.
 
-**Why this beats hub-per-BU, against the three real drivers:**
+**Why hub-per-BU:**
 
-- **Cost centers** are satisfied by separating *spokes*, not hubs. A per-BU hub is platform overhead with ambiguous ownership. With per-BU spokes, each BU is billed for exactly its workload clusters; the single small hub sits on the platform team's budget as a flat tax.
-- **Uneven adoption pace** is satisfied by spokes being independent IaC stacks with independent state. A BU onboards by registering its spokes with the existing hub whenever ready. Nothing couples timelines.
-- **Isolation** lives at the spoke (separate failure domains, blast radius, IAM). The only shared thing is orchestration; if the hub is down, running workloads keep serving traffic — only deployments pause.
+- **Cost attribution** is unambiguous — the hub belongs to the BU's cost center, not a shared platform tax. Every dollar is traceable.
+- **Blast radius isolation** is total — a problem in BU-A's hub cannot affect BU-B. Outages, misconfigurations, and runaway workloads stay within the BU boundary.
+- **Compliance / sovereignty** is straightforward — no exceptions or module flags needed for BUs with PCI, HIPAA, or data-residency requirements; isolation is the default for everyone.
+- **Autonomy** — each BU can evolve its hub configuration, ArgoCD version, and addon set independently without negotiating with other tenants or the platform team.
 
-**Anti-pattern avoided:** Hub-per-BU = 3N clusters for N BUs. You patch ArgoCD N times, maintain N bootstraps, and operating cost grows linearly with adoption — the opposite of what a platform should do (cost per tenant should fall as adoption rises).
-
-**Exception:** A BU under hard regulatory/sovereignty isolation (e.g. PCI/HIPAA/data residency) that legally cannot share a control plane gets a dedicated hub via a module flag. Dedicated is the exception; shared is the default.
-
-**Critical timing insight:** With one BU, shared-hub and hub-per-BU look identical (one hub either way). The decision only bites at BU #2. Build the shared-hub-capable version now at zero extra cost by making the hub a separate lifecycle and having the spoke module take the hub endpoint as an input.
+**Trade-off acknowledged:** Operational surface scales with BU count (N hubs to patch, N ArgoCD instances to upgrade). This is mitigated by the platform team providing a versioned, golden hub module that BUs consume — upgrades are a module version bump driven by Spacelift, not N manual operations.
 
 ---
 
@@ -67,10 +64,10 @@ Use the canonical CNCF names (align with the ecosystem for hiring and literature
 
 - The module provisions the cloud substrate + cluster (network, control plane, node pools) and installs exactly one thing inside the cluster: **ArgoCD**, then hands off. Everything else (ingress, cert-manager, observability agents, policy controllers, secrets operator, apps) is installed by ArgoCD via app-of-apps / ApplicationSets — not by Terraform. This keeps Terraform's in-cluster footprint near zero and avoids perpetual drift-reconciliation pain.
 - **Compose, don't monolith:** a thin top-level module wiring sub-modules (network, cluster, node-pools, bootstrap). Opinionated defaults with a few escape-hatch variables. Semantic versioning, published to a private registry.
-- **Module decomposition into two lifecycles (from day one):**
-  - **Platform/hub module** — run once, owned/operated by the platform team. Provisions the management cluster, ArgoCD, and org-wide addon/policy/observability hooks.
-  - **Tenant/spoke module** — run per BU-per-environment. Inputs include the hub endpoint and BU identity. Provisions the spoke, registers it with the hub, applies the BU's quota/RBAC/cost-center tags, and bootstraps the BU's app-of-apps.
-- Onboarding a BU = run the spoke module twice (dev + prod) + scaffold the BU's Git repo structure.
+- **Module decomposition into two lifecycle modules (from day one):**
+  - **BU hub module** — run once per BU. Provisions the BU's hub cluster, ArgoCD, and addon/policy/observability hooks. Takes BU identity and cost-center tags as inputs.
+  - **BU cluster module** — run per BU-per-environment (dev and prod). Inputs include the BU hub endpoint and environment. Provisions the workload cluster, registers it with the BU's hub, and bootstraps the BU's app-of-apps.
+- Onboarding a BU = run the hub module once + the cluster module twice (dev + prod) + scaffold the BU's Git repo structure.
 - **Spacelift** is the execution + policy layer: runs the modules per tenant with isolated state, enforces OPA policy-as-code on plans (mandatory cost-center tags, approved regions, no public load balancers, etc.), provides stacks-per-tenant and drift detection. The portal calls Spacelift; Spacelift runs the module; the module bootstraps ArgoCD; ArgoCD does the rest.
 
 ---
@@ -84,7 +81,7 @@ Start with Terraform direct for cluster provisioning. Design the module boundary
 ### 6. GitOps and promotion (conceptual correctness)
 
 - ArgoCD does not "move code." It continuously reconciles each cluster to whatever Git declares. **Promotion is a Git operation** (bump image tag / Kustomize overlay / Helm values in the prod path); ArgoCD reflects it.
-- Build the promotion mechanism in the Git workflow. Tools: **ApplicationSets** (one hub fans out to many spokes without hand-written manifests), **Kargo** (multi-stage promotion pipelines), **Argo Rollouts** (progressive delivery / canary / blue-green into prod).
+- Build the promotion mechanism in the Git workflow. Tools: **ApplicationSets** (the BU hub fans out to its dev and prod clusters without hand-written manifests), **Kargo** (multi-stage promotion pipelines), **Argo Rollouts** (progressive delivery / canary / blue-green into prod).
 
 ---
 
@@ -113,8 +110,8 @@ Shared org-wide backend (Prometheus/Thanos/Mimir + Grafana + OpenTelemetry + Lok
 
 ### 10. FinOps and golden paths
 
-- Enforce mandatory cost-center tags via Spacelift OPA (plan fails if missing). Add OpenCost/Kubecost for namespace-level showback if/when shared clusters are introduced.
-- Do not try to amortize the hub across BUs — absorb it as platform tax; charge BUs for their spokes (the real spend).
+- Enforce mandatory cost-center tags via Spacelift OPA (plan fails if missing). Each BU's hub and clusters carry its cost-center tag — billing is unambiguous by design.
+- BUs are billed for all three clusters (hub + dev + prod). The platform team's cost is the toolchain (Spacelift, observability backend, Backstage) — not the BU hubs.
 - A golden path is the paved road behind the portal abstraction; the portal is only as good as the golden path behind it.
 
 ---
@@ -122,7 +119,7 @@ Shared org-wide backend (Prometheus/Thanos/Mimir + Grafana + OpenTelemetry + Lok
 ## Greenfield / Adoption Principles
 
 - **Treat BU #1 as a design partner, not a customer.** With one tenant, co-build and learn the golden path empirically; harden it into reusable, versioned modules + policy-as-code. Do not build the polished self-service portal yet — you don't have enough repetition to know what to abstract, and you'll abstract the wrong things.
-- **Build the reusable bones, not the veneer.** Investment goes into modules, hub-registration parameterization, and policy-as-code. The portal is the last layer.
+- **Build the reusable bones, not the veneer.** Investment goes into the versioned hub and cluster modules, policy-as-code, and the BU onboarding scaffold. The portal is the last layer.
 - **Funding model is a prerequisite.** Decide: centrally funded as overhead vs chargeback. Answer "who pays during build-out when the platform has zero/one tenant?" Platforms that start on one BU's budget get over-fitted to that BU and never generalize.
 - **Anchor tenant with real stakes, but don't over-fit the platform to it.**
 
@@ -144,9 +141,9 @@ Shared org-wide backend (Prometheus/Thanos/Mimir + Grafana + OpenTelemetry + Lok
 
 The IDP is an **internal product**. Its customers are the BUs (cost centers). It has two faces: **golden paths** (enablement — make the right way the easy way) and **guardrails** (governance — make the wrong way impossible).
 
-**Operating model:** platform team operates it; centrally funded; BUs billed for their spokes.
+**Operating model:** platform team operates the shared toolchain (Spacelift, observability backend, Backstage, CI/CD); centrally funded. BUs are billed for all clusters within their cost center — hub + dev + prod.
 
-**The economic story (the one slide for executives):** the first BU is the most expensive one you'll onboard because it pays for the spine (foundation, hub, modules). Every BU after rides shared infrastructure, so marginal cost falls and the platform gets more efficient as it spreads — the inverse of a hub-per-BU world where each tenant adds a full triple-cluster footprint and cost climbs in lockstep with adoption.
+**The economic story (the one slide for executives):** every BU gets a fully isolated, predictable footprint — hub + dev + prod. Cost per BU is directly attributable, compliance is trivial, and no BU ever waits for or impacts another. The platform team's value is the golden path that makes standing up that footprint a self-service, policy-enforced, one-click operation rather than months of bespoke infrastructure work.
 
 **The CTO decisions that actually matter:**
 1. Funding + mandate with an executive sponsor who can ask BUs to adopt rather than build their own.

@@ -13,14 +13,14 @@ This is operated by a **central platform team**, centrally funded, with BUs bill
 ## The Economic Story
 
 ```
-BU #1 onboards → pays for the spine (hub + foundation)
-BU #2 onboards → rides shared infrastructure
-BU #3 onboards → marginal cost falls further
+BU #1 onboards → gets its own hub + dev/prod clusters
+BU #2 onboards → same pattern, fully isolated cost center
+BU #3 onboards → predictable, repeatable per-BU cost
 ...
-Cost per tenant trends DOWN as adoption grows
+Cost per BU is directly attributable and cleanly isolated
 ```
 
-The inverse of hub-per-BU, where every new tenant adds a full triple-cluster footprint and cost climbs in lockstep with adoption.
+Each BU owns its hub — blast radius is contained, billing is unambiguous, and no BU ever shares a control plane with another.
 
 ---
 
@@ -108,39 +108,40 @@ block-beta
 
 ---
 
-## Cluster Topology: Shared Hub + Per-BU Spokes
+## Cluster Topology: Hub-per-BU
+
+Each BU gets its own dedicated hub (ArgoCD fleet control) plus dev and prod spokes — fully isolated cost center, blast radius, and control plane.
 
 ```mermaid
 graph TD
-    HUB["🎛️ SHARED HUB\n(platform team owns)\nArgoCD fleet control\nAddon controllers\nNo BU workloads"]
-
     subgraph BUA["BU-A  (own cost center)"]
-        A_DEV["dev spoke"]
-        A_PROD["prod spoke"]
+        A_HUB["🎛️ BU-A Hub\nArgoCD · Addon controllers"]
+        A_DEV["dev cluster"]
+        A_PROD["prod cluster"]
+        A_HUB --> A_DEV
+        A_HUB --> A_PROD
     end
 
     subgraph BUB["BU-B  (own cost center)"]
-        B_DEV["dev spoke"]
-        B_PROD["prod spoke"]
+        B_HUB["🎛️ BU-B Hub\nArgoCD · Addon controllers"]
+        B_DEV["dev cluster"]
+        B_PROD["prod cluster"]
+        B_HUB --> B_DEV
+        B_HUB --> B_PROD
     end
 
     subgraph BUC["BU-C  (onboards later)"]
-        C_DEV["dev spoke"]
-        C_PROD["prod spoke"]
+        C_HUB["🎛️ BU-C Hub\nArgoCD · Addon controllers"]
+        C_DEV["dev cluster"]
+        C_PROD["prod cluster"]
+        C_HUB --> C_DEV
+        C_HUB --> C_PROD
     end
-
-    HUB --> A_DEV
-    HUB --> A_PROD
-    HUB --> B_DEV
-    HUB --> B_PROD
-    HUB --> C_DEV
-    HUB --> C_PROD
 ```
 
-| Model          | 3 BUs = ? clusters                | Cost trend            |
-| -------------- | --------------------------------- | --------------------- |
-| Hub-per-BU     | 9 clusters (3 hubs + 6 spokes)    | Grows linearly        |
-| **Shared hub** | **7 clusters (1 hub + 6 spokes)** | **Hub is a flat tax** |
+| What each BU gets | Clusters | Isolation |
+| ----------------- | -------- | --------- |
+| Hub + dev + prod  | 3        | Full — dedicated control plane, IAM, blast radius |
 
 ---
 
