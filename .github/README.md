@@ -108,7 +108,7 @@ block-beta
 
 ---
 
-## Cluster Topology: Shared Hub + Per-BU Clusters
+## Cluster Topology: Shared Hub ✅
 
 One shared hub (platform team owns) orchestrates per-BU dev and prod clusters. The hub runs no business workload — only ArgoCD fleet control and addon controllers.
 
