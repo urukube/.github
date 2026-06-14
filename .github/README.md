@@ -6,21 +6,21 @@ A **greenfield Internal Developer Platform** that gives every business unit (BU)
 
 A BU asks for an environment. The platform provisions it. Everything in between is abstracted behind **golden paths** (paved roads that make the right way the easy way) and **guardrails** (policy enforcement that makes the wrong way impossible).
 
-This is operated by a **central platform team**, centrally funded, with BUs billed for their own hub and workload clusters.
+This is operated by a **central platform team**, centrally funded, with BUs billed only for their own workload clusters (dev + prod). The shared hub is platform cost.
 
 ---
 
 ## The Economic Story
 
 ```
-BU #1 onboards → gets its own hub + dev/prod clusters
-BU #2 onboards → same pattern, fully isolated cost center
-BU #3 onboards → predictable, repeatable per-BU cost
+BU #1 onboards → pays for the spine (foundation + shared hub + modules)
+BU #2 onboards → rides the shared hub, only pays for its own clusters
+BU #3 onboards → marginal cost falls further
 ...
-Cost per BU is directly attributable and cleanly isolated
+Cost per tenant trends DOWN as adoption grows
 ```
 
-Each BU owns its hub — blast radius is contained, billing is unambiguous, and no BU ever shares a control plane with another.
+The shared hub is a flat tax on the platform team's budget. Every BU after the first rides existing infrastructure — the inverse of a model where each new tenant adds a full dedicated hub.
 
 ---
 
@@ -57,7 +57,7 @@ block-beta
   space
 
   block:resource["☸️ RESOURCE PLANE"]
-    H["per-BU Hub Cluster"]
+    H["Shared Hub Cluster"]
     I["per-BU Dev Cluster"]
     J["per-BU Prod Cluster"]
   end
@@ -108,40 +108,41 @@ block-beta
 
 ---
 
-## Cluster Topology: Hub-per-BU
+## Cluster Topology: Shared Hub + Per-BU Clusters
 
-Each BU gets its own dedicated hub (ArgoCD fleet control) plus dev and prod spokes — fully isolated cost center, blast radius, and control plane.
+One shared hub (platform team owns) orchestrates per-BU dev and prod clusters. The hub runs no business workload — only ArgoCD fleet control and addon controllers.
 
 ```mermaid
 graph TD
+    HUB["🎛️ SHARED HUB\n(platform team owns)\nArgoCD fleet control\nAddon controllers\nNo BU workloads"]
+
     subgraph BUA["BU-A  (own cost center)"]
-        A_HUB["🎛️ BU-A Hub\nArgoCD · Addon controllers"]
         A_DEV["dev cluster"]
         A_PROD["prod cluster"]
-        A_HUB --> A_DEV
-        A_HUB --> A_PROD
     end
 
     subgraph BUB["BU-B  (own cost center)"]
-        B_HUB["🎛️ BU-B Hub\nArgoCD · Addon controllers"]
         B_DEV["dev cluster"]
         B_PROD["prod cluster"]
-        B_HUB --> B_DEV
-        B_HUB --> B_PROD
     end
 
     subgraph BUC["BU-C  (onboards later)"]
-        C_HUB["🎛️ BU-C Hub\nArgoCD · Addon controllers"]
         C_DEV["dev cluster"]
         C_PROD["prod cluster"]
-        C_HUB --> C_DEV
-        C_HUB --> C_PROD
     end
+
+    HUB --> A_DEV
+    HUB --> A_PROD
+    HUB --> B_DEV
+    HUB --> B_PROD
+    HUB --> C_DEV
+    HUB --> C_PROD
 ```
 
-| What each BU gets | Clusters | Isolation |
-| ----------------- | -------- | --------- |
-| Hub + dev + prod  | 3        | Full — dedicated control plane, IAM, blast radius |
+| Model | 3 BUs = ? clusters | Cost trend |
+| ----- | ------------------ | ---------- |
+| **Shared hub** | **7 (1 hub + 6 clusters)** | **Hub is a flat tax — cost per BU falls** |
+| Hub-per-BU | 9 (3 hubs + 6 clusters) | Grows linearly with adoption |
 
 ---
 
@@ -157,7 +158,7 @@ flowchart TD
 
     TF["Terraform Module\nnetwork · cluster · node-pools · bootstrap\nProvisions cloud substrate\nInstalls ONE thing inside cluster"]
 
-    ARGOCD["ArgoCD (in cluster)\napp-of-apps\nRegistered with BU hub\nInstalls everything else:\ningress · cert-manager · observability agents\npolicy controllers · secrets operator · apps"]
+    ARGOCD["ArgoCD (in cluster)\napp-of-apps\nRegistered with shared hub\nInstalls everything else:\ningress · cert-manager · observability agents\npolicy controllers · secrets operator · apps"]
 
     DEV --> PORTAL --> SPACELIFT --> TF --> ARGOCD
 ```
@@ -193,7 +194,7 @@ timeline
                                : Network hub-spoke (peered VPCs)
                                : Identity / SSO + workload identity
                                : Git & IaC repo layout
-    Phase 1 - Spine · 1 BU    : BU hub cluster (dedicated)
+    Phase 1 - Spine · 1 BU    : Shared hub cluster
     (TODAY)                    : Dev + prod clusters for pilot BU
                                : ArgoCD fleet registration
                                : Reference app deployed
@@ -208,7 +209,7 @@ timeline
                                : cosign / SBOM / supply-chain controls
                                : Network policy (Cilium)
     Phase 4 - Self-Service     : Backstage golden path
-                               : request env → Spacelift → hub + clusters + repo scaffold
+                               : request env → Spacelift → clusters + repo scaffold
                                : (once 2–3 BUs exist and golden path is stable)
 ```
 
@@ -245,4 +246,4 @@ timeline
 | **Adoption**       | BUs onboarded · time-to-first-environment                        |
 | **Outcomes**       | DORA: lead time · deploy frequency · change-failure rate · MTTR  |
 | **Governance**     | % workloads behind enforced policy + signed supply chain         |
-| **Unit economics** | Cost per BU directly attributable · hub + cluster spend tagged per cost center |
+| **Unit economics** | Cost per tenant trending down · spend attributed per cost center |
