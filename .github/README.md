@@ -6,7 +6,7 @@ A **greenfield Internal Developer Platform** that gives every business unit (BU)
 
 A BU asks for an environment. The platform provisions it. Everything in between is abstracted behind **golden paths** (paved roads that make the right way the easy way) and **guardrails** (policy enforcement that makes the wrong way impossible).
 
-This is operated by a **central platform team**, centrally funded, with BUs billed only for their own spoke clusters.
+This is operated by a **central platform team**, centrally funded, with BUs billed for their own hub and workload clusters.
 
 ---
 
@@ -57,9 +57,9 @@ block-beta
   space
 
   block:resource["☸️ RESOURCE PLANE"]
-    H["Shared Hub Cluster"]
-    I["per-BU Dev Spoke"]
-    J["per-BU Prod Spoke"]
+    H["per-BU Hub Cluster"]
+    I["per-BU Dev Cluster"]
+    J["per-BU Prod Cluster"]
   end
 
   space
@@ -157,7 +157,7 @@ flowchart TD
 
     TF["Terraform Module\nnetwork · cluster · node-pools · bootstrap\nProvisions cloud substrate\nInstalls ONE thing inside cluster"]
 
-    ARGOCD["ArgoCD (in spoke)\napp-of-apps\nRegistered with hub\nInstalls everything else:\ningress · cert-manager · observability agents\npolicy controllers · secrets operator · apps"]
+    ARGOCD["ArgoCD (in cluster)\napp-of-apps\nRegistered with BU hub\nInstalls everything else:\ningress · cert-manager · observability agents\npolicy controllers · secrets operator · apps"]
 
     DEV --> PORTAL --> SPACELIFT --> TF --> ARGOCD
 ```
@@ -174,10 +174,10 @@ flowchart TD
     PR["GitHub PR → merge"]
     CI["CI Build\nimage built + signed (cosign)\nSBOM generated\nimage pushed to JFrog Artifactory"]
     DEV_GIT["Bump image tag in Git\n(dev overlay)"]
-    DEV_SYNC["ArgoCD reconciles\ndev spoke ✅"]
+    DEV_SYNC["ArgoCD reconciles\ndev cluster ✅"]
     PROMOTE["Promotion = Git operation\n(Kargo pipeline or manual overlay bump)"]
     PROD_GIT["Bump image tag in Git\n(prod overlay)"]
-    PROD_SYNC["ArgoCD reconciles\nprod spoke\nArgo Rollouts: canary / blue-green ✅"]
+    PROD_SYNC["ArgoCD reconciles\nprod cluster\nArgo Rollouts: canary / blue-green ✅"]
 
     PUSH --> PR --> CI --> DEV_GIT --> DEV_SYNC --> PROMOTE --> PROD_GIT --> PROD_SYNC
 ```
@@ -193,8 +193,8 @@ timeline
                                : Network hub-spoke (peered VPCs)
                                : Identity / SSO + workload identity
                                : Git & IaC repo layout
-    Phase 1 - Spine · 1 BU    : Hub cluster (future-shared)
-    (TODAY)                    : Dev + prod spokes for pilot BU
+    Phase 1 - Spine · 1 BU    : BU hub cluster (dedicated)
+    (TODAY)                    : Dev + prod clusters for pilot BU
                                : ArgoCD fleet registration
                                : Reference app deployed
                                : Dev → prod promotion via Git
@@ -208,7 +208,7 @@ timeline
                                : cosign / SBOM / supply-chain controls
                                : Network policy (Cilium)
     Phase 4 - Self-Service     : Backstage golden path
-                               : request env → Spacelift → spoke + repo scaffold
+                               : request env → Spacelift → hub + clusters + repo scaffold
                                : (once 2–3 BUs exist and golden path is stable)
 ```
 
@@ -245,4 +245,4 @@ timeline
 | **Adoption**       | BUs onboarded · time-to-first-environment                        |
 | **Outcomes**       | DORA: lead time · deploy frequency · change-failure rate · MTTR  |
 | **Governance**     | % workloads behind enforced policy + signed supply chain         |
-| **Unit economics** | Cost per tenant trending down · spend attributed per cost center |
+| **Unit economics** | Cost per BU directly attributable · hub + cluster spend tagged per cost center |
