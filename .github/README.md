@@ -6,21 +6,21 @@ A **greenfield Internal Developer Platform** that gives every business unit (BU)
 
 A BU asks for an environment. The platform provisions it. Everything in between is abstracted behind **golden paths** (paved roads that make the right way the easy way) and **guardrails** (policy enforcement that makes the wrong way impossible).
 
-This is operated by a **central platform team**, centrally funded, with BUs billed only for their own workload clusters (dev + prod). The shared hub is platform cost.
+This is operated by a **central platform team**, centrally funded, with BUs billed only for their own workload clusters (dev + prod). The orchestrator cluster is platform cost.
 
 ---
 
 ## The Economic Story
 
 ```
-BU #1 onboards → pays for the spine (foundation + shared hub + modules)
-BU #2 onboards → rides the shared hub, only pays for its own clusters
+BU #1 onboards → pays for the spine (foundation + orchestrator cluster + CRD platform)
+BU #2 onboards → rides the shared orchestrator, only pays for its own clusters
 BU #3 onboards → marginal cost falls further
 ...
 Cost per tenant trends DOWN as adoption grows
 ```
 
-The shared hub is a flat tax on the platform team's budget. Every BU after the first rides existing infrastructure — the inverse of a model where each new tenant adds a full dedicated hub.
+The orchestrator cluster is a flat tax on the platform team's budget. Every BU after the first rides existing infrastructure — Backstage, Crossplane, and ArgoCD are already running and ready to provision the next tenant on demand.
 
 ---
 
@@ -49,7 +49,7 @@ block-beta
 
   block:delivery["🔁 INTEGRATION & DELIVERY PLANE"]
     D["GitHub (VCS)"]
-    E["Spacelift (IaC + Policy)"]
+    E["Crossplane (CRD-driven infra)"]
     F["JFrog Artifactory"]
     G["ArgoCD · Kargo · Argo Rollouts"]
   end
@@ -57,7 +57,7 @@ block-beta
   space
 
   block:resource["☸️ RESOURCE PLANE"]
-    H["Shared Hub Cluster"]
+    H["Orchestrator Cluster (PROD + DR)"]
     I["per-BU Dev Cluster"]
     J["per-BU Prod Cluster"]
   end
@@ -108,13 +108,17 @@ block-beta
 
 ---
 
-## Cluster Topology: Shared Hub ✅
+## Cluster Topology: Orchestrator Cluster ✅
 
-One shared hub (platform team owns) orchestrates per-BU dev and prod clusters. The hub runs no business workload — only ArgoCD fleet control and addon controllers.
+A single **Orchestrator Cluster** (platform team owns, PROD + DR) runs Crossplane, ArgoCD, and Backstage. It holds no BU workloads — its sole job is to provision and manage infrastructure for every customer on demand via Custom Resource Definitions (CRDs).
 
 ```mermaid
 graph TD
-    HUB["🎛️ SHARED HUB\n(platform team owns)\nArgoCD fleet control\nAddon controllers\nNo BU workloads"]
+    subgraph ORCH["🎛️ ORCHESTRATOR CLUSTER  (platform team owns)"]
+        ORCH_PROD["PROD\nCrossplane · ArgoCD · Backstage\nCustom Resource Definitions"]
+        ORCH_DR["DR  (active standby)"]
+        ORCH_PROD -.->|failover| ORCH_DR
+    end
 
     subgraph BUA["BU-A  (own cost center)"]
         A_DEV["dev cluster"]
@@ -131,18 +135,18 @@ graph TD
         C_PROD["prod cluster"]
     end
 
-    HUB --> A_DEV
-    HUB --> A_PROD
-    HUB --> B_DEV
-    HUB --> B_PROD
-    HUB --> C_DEV
-    HUB --> C_PROD
+    ORCH_PROD -->|Crossplane provisions| A_DEV
+    ORCH_PROD -->|Crossplane provisions| A_PROD
+    ORCH_PROD -->|Crossplane provisions| B_DEV
+    ORCH_PROD -->|Crossplane provisions| B_PROD
+    ORCH_PROD -->|Crossplane provisions| C_DEV
+    ORCH_PROD -->|Crossplane provisions| C_PROD
 ```
 
-| Model | 3 BUs = ? clusters | Cost trend |
-| ----- | ------------------ | ---------- |
-| **Shared hub** | **7 (1 hub + 6 clusters)** | **Hub is a flat tax — cost per BU falls** |
-| Hub-per-BU | 9 (3 hubs + 6 clusters) | Grows linearly with adoption |
+| What the platform runs | Clusters | Cost model |
+| ---------------------- | -------- | ---------- |
+| Orchestrator (PROD + DR) | 2 | Flat platform cost — does not scale with BU count |
+| Per-BU workloads | 2 per BU (dev + prod) | BU cost center |
 
 ---
 
@@ -152,18 +156,18 @@ graph TD
 flowchart TD
     DEV["👩‍💻 BU Engineer\n'I need a Kubernetes environment'"]
 
-    PORTAL["Backstage Portal\nDeveloper Control Plane\n(Phase 4 — manual trigger for now)"]
+    PORTAL["Backstage Portal\n(hosted on Orchestrator Cluster)\nBU fills in: name · size · region · cost-center"]
 
-    SPACELIFT["Spacelift Stack\nRuns Terraform\nEnforces OPA policy\n(cost-center tags · approved regions · no public LBs)"]
+    CRD["Environment CRD applied\nto Orchestrator Cluster\nPolicy gates: cost-center tag · approved region · no public LBs"]
 
-    TF["Terraform Module\nnetwork · cluster · node-pools · bootstrap\nProvisions cloud substrate\nInstalls ONE thing inside cluster"]
+    CROSSPLANE["Crossplane\n(on Orchestrator)\nReconciles the CRD\nProvisions cloud infra:\nVPC · cluster · node-pools · IAM"]
 
-    ARGOCD["ArgoCD (in cluster)\napp-of-apps\nRegistered with shared hub\nInstalls everything else:\ningress · cert-manager · observability agents\npolicy controllers · secrets operator · apps"]
+    ARGOCD["ArgoCD\n(on Orchestrator)\nDetects new cluster\nDeploys app-of-apps:\ningress · cert-manager · observability agents\npolicy controllers · secrets operator · apps"]
 
-    DEV --> PORTAL --> SPACELIFT --> TF --> ARGOCD
+    DEV --> PORTAL --> CRD --> CROSSPLANE --> ARGOCD
 ```
 
-**Principle: "Terraform bootstraps, GitOps runs"**
+**Principle: "CRDs declare intent · Crossplane provisions infra · ArgoCD delivers everything else"**
 
 ---
 
@@ -194,9 +198,9 @@ timeline
                                : Network hub-spoke (peered VPCs)
                                : Identity / SSO + workload identity
                                : Git & IaC repo layout
-    Phase 1 - Spine · 1 BU    : Shared hub cluster
-    (TODAY)                    : Dev + prod clusters for pilot BU
-                               : ArgoCD fleet registration
+    Phase 1 - Spine · 1 BU    : Orchestrator cluster (PROD + DR)
+    (TODAY)                    : Crossplane + ArgoCD + Backstage on Orchestrator
+                               : Dev + prod clusters for pilot BU via CRD
                                : Reference app deployed
                                : Dev → prod promotion via Git
     Phase 2 - Productionize    : Spacelift + OPA policy-as-code
@@ -217,25 +221,26 @@ timeline
 
 ## Toolchain at a Glance
 
-| Plane                  | Tool                      | Role                                     |
-| ---------------------- | ------------------------- | ---------------------------------------- |
-| Developer Control      | Backstage                 | Self-service portal (Phase 4)            |
-| Integration & Delivery | GitHub                    | VCS, CI                                  |
-| Integration & Delivery | Spacelift                 | IaC execution + OPA policy-as-code       |
-| Integration & Delivery | JFrog Artifactory         | Image & artifact registry                |
-| Integration & Delivery | ArgoCD                    | GitOps continuous delivery               |
-| Integration & Delivery | Kargo                     | Multi-stage promotion pipelines          |
-| Integration & Delivery | Argo Rollouts             | Progressive delivery (canary/blue-green) |
-| Resource               | Terraform                 | Cluster + network provisioning           |
-| Observability          | Prometheus / Thanos       | Metrics (per-tenant scoped)              |
-| Observability          | Grafana                   | Dashboards                               |
-| Observability          | OpenTelemetry             | Telemetry collection                     |
-| Observability          | Loki / Tempo              | Logs + traces                            |
-| Security               | External Secrets Operator | Secrets from cloud secret manager        |
-| Security               | Kyverno                   | Admission-enforced policy                |
-| Security               | Cilium                    | CNI + network policy                     |
-| Security               | cosign / sigstore         | Image signing                            |
-| Security               | SPIFFE/SPIRE              | Cross-cluster workload identity          |
+| Plane                  | Tool                      | Role                                                        |
+| ---------------------- | ------------------------- | ----------------------------------------------------------- |
+| Developer Control      | Backstage                 | Self-service portal — hosted on Orchestrator Cluster        |
+| Integration & Delivery | GitHub                    | VCS, CI                                                     |
+| Integration & Delivery | Crossplane                | CRD-driven infra provisioning (clusters, VPCs, IAM, etc.)  |
+| Integration & Delivery | JFrog Artifactory         | Image & artifact registry                                   |
+| Integration & Delivery | ArgoCD                    | GitOps CD — hosted on Orchestrator Cluster                  |
+| Integration & Delivery | Kargo                     | Multi-stage promotion pipelines                             |
+| Integration & Delivery | Argo Rollouts             | Progressive delivery (canary/blue-green)                    |
+| Resource               | Orchestrator Cluster      | PROD + DR · runs Crossplane, ArgoCD, Backstage              |
+| Resource               | BU Clusters               | per-BU dev + prod · provisioned by Crossplane via CRDs      |
+| Observability          | Prometheus / Thanos       | Metrics (per-tenant scoped)                                 |
+| Observability          | Grafana                   | Dashboards                                                  |
+| Observability          | OpenTelemetry             | Telemetry collection                                        |
+| Observability          | Loki / Tempo              | Logs + traces                                               |
+| Security               | External Secrets Operator | Secrets from cloud secret manager                           |
+| Security               | Kyverno                   | Admission-enforced policy                                   |
+| Security               | Cilium                    | CNI + network policy                                        |
+| Security               | cosign / sigstore         | Image signing                                               |
+| Security               | SPIFFE/SPIRE              | Cross-cluster workload identity                             |
 
 ---
 
