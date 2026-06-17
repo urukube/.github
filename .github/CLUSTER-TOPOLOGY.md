@@ -33,6 +33,16 @@ graph TD
     ORCH_PROD -->|Crossplane provisions| B_PROD
     ORCH_PROD -->|Crossplane provisions| C_DEV
     ORCH_PROD -->|Crossplane provisions| C_PROD
+
+    classDef orchProd   fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,font-weight:bold
+    classDef orchDR     fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef devCluster fill:#0D9488,stroke:#0F766E,color:#FFFFFF
+    classDef prodCluster fill:#D97706,stroke:#B45309,color:#FFFFFF
+
+    class ORCH_PROD orchProd
+    class ORCH_DR orchDR
+    class A_DEV,B_DEV,C_DEV devCluster
+    class A_PROD,B_PROD,C_PROD prodCluster
 ```
 
 | What the platform runs | Clusters | Cost model |
@@ -67,6 +77,12 @@ flowchart TD
     ARGOCD["ArgoCD\n(on Orchestrator)\nDetects new cluster\nDeploys app-of-apps:\ningress · cert-manager · observability agents\npolicy controllers · secrets operator · apps"]
 
     DEV --> PORTAL --> CRD --> CROSSPLANE --> ARGOCD
+
+    style DEV        fill:#1D4ED8,stroke:#1E3A8A,color:#FFFFFF,font-weight:bold
+    style PORTAL     fill:#7C3AED,stroke:#5B21B6,color:#FFFFFF
+    style CRD        fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    style CROSSPLANE fill:#0D9488,stroke:#0F766E,color:#FFFFFF
+    style ARGOCD     fill:#D97706,stroke:#B45309,color:#FFFFFF
 ```
 
 **Principle: "CRDs declare intent · Crossplane provisions infra · ArgoCD delivers everything else"**
