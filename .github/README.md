@@ -118,19 +118,9 @@ A single **Orchestrator Cluster** (PROD + DR) runs Crossplane, ArgoCD, and Backs
 
 ## GitOps Promotion Flow
 
-```mermaid
-flowchart TD
-    PUSH["👩‍💻 Developer pushes code"]
-    PR["GitHub PR → merge"]
-    CI["CI Build\nimage built + signed (cosign)\nSBOM generated\nimage pushed to JFrog Artifactory"]
-    DEV_GIT["Bump image tag in Git\n(dev overlay)"]
-    DEV_SYNC["ArgoCD reconciles\ndev cluster ✅"]
-    PROMOTE["Promotion = Git operation\n(Kargo pipeline or manual overlay bump)"]
-    PROD_GIT["Bump image tag in Git\n(prod overlay)"]
-    PROD_SYNC["ArgoCD reconciles\nprod cluster\nArgo Rollouts: canary / blue-green ✅"]
+Promotion is a Git operation — ArgoCD reconciles each cluster to what Git declares. Push → CI → dev → promote → prod.
 
-    PUSH --> PR --> CI --> DEV_GIT --> DEV_SYNC --> PROMOTE --> PROD_GIT --> PROD_SYNC
-```
+> Full flow diagram, stage breakdown, and key principles: [GITOPS-PROMOTION.md](GITOPS-PROMOTION.md)
 
 ---
 
