@@ -96,9 +96,145 @@ flowchart LR
 
 ## DR Strategy
 
-The Orchestrator Cluster runs in an active/standby configuration:
+> **Owned and operated exclusively by the Platform team.** BU teams have no involvement in DR management — they are notified of status and experience no disruption to running workloads.
 
-- **PROD** handles all live traffic — CRD reconciliation, GitOps sync, portal serving.
-- **DR** is a hot standby, continuously synced. In the event of a PROD failure, failover is triggered and the DR instance takes over without re-provisioning BU clusters (workloads keep running independently).
+---
 
-> BU workload clusters are independent of the Orchestrator. A failure of the Orchestrator pauses new provisioning and deployments but does not affect running BU workloads.
+### Multi-Region Architecture
+
+The Orchestrator Cluster runs as an **active/standby pair across two separate cloud regions**. This ensures that a full regional failure (AZ outages, cloud provider incidents, network partitions) cannot take down the platform control plane.
+
+```mermaid
+graph LR
+    subgraph PRIMARY["🟢  PRIMARY REGION  (e.g. us-east-1)"]
+        direction TB
+        ORCH_PROD["ORCHESTRATOR — PROD\nCrossplane · ArgoCD · Backstage\nCRDs · Live traffic"]
+    end
+
+    subgraph DR_REGION["🟡  DR REGION  (e.g. us-west-2)"]
+        direction TB
+        ORCH_DR["ORCHESTRATOR — DR\nCrossplane · ArgoCD · Backstage\nWarm standby · No live traffic"]
+    end
+
+    subgraph BU_CLUSTERS["BU WORKLOAD CLUSTERS  (any region)"]
+        direction TB
+        BU1["BU-A  dev + prod"]
+        BU2["BU-B  dev + prod"]
+        BU3["BU-C  dev + prod"]
+    end
+
+    ORCH_PROD -->|manages| BU_CLUSTERS
+    ORCH_PROD -.->|continuous state sync| ORCH_DR
+    ORCH_DR -.->|ready to take over| BU_CLUSTERS
+
+    style ORCH_PROD  fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,font-weight:bold
+    style ORCH_DR    fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    style BU1        fill:#0D9488,stroke:#0F766E,color:#FFFFFF
+    style BU2        fill:#0D9488,stroke:#0F766E,color:#FFFFFF
+    style BU3        fill:#0D9488,stroke:#0F766E,color:#FFFFFF
+```
+
+---
+
+### What Gets Synced (Continuous Replication)
+
+| Component | What is replicated | Mechanism |
+| --------- | ------------------ | --------- |
+| **Crossplane** | All Composite Resource Claims, provider configs, managed resource state | etcd backup + restore to DR; Crossplane re-adopts existing cloud resources on startup |
+| **ArgoCD** | All Application and AppProject manifests, cluster registrations, RBAC | Git is the source of truth — DR ArgoCD re-syncs from the same Git repos on startup |
+| **Backstage** | Service catalog, software templates, BU onboarding records | Database replication to DR region (read replica promoted on failover) |
+| **Secrets** | All secrets remain in the cloud secret manager (e.g. AWS Secrets Manager) | Not stored on the cluster — DR reads from the same secret store |
+| **CRD definitions** | All platform CRDs and composite resource definitions | Stored in Git — applied to DR cluster by ArgoCD bootstrap on startup |
+
+> **Key principle:** Git is the ultimate source of truth. The DR cluster does not need to replicate in-memory state — it re-derives everything from Git and the cloud provider's own resource state.
+
+---
+
+### Failure Detection
+
+The Platform team is responsible for monitoring Orchestrator health. Alerts fire on:
+
+- Orchestrator API server unresponsive for > 2 minutes
+- Crossplane controller not reconciling for > 5 minutes
+- ArgoCD sync failures across all applications
+- Backstage portal returning 5xx errors
+- Cross-region health check (DR pings PROD every 30 seconds) failing
+
+All alerts route to the **Platform team on-call** via PagerDuty (or equivalent). BU teams are never in the alert path for Orchestrator health.
+
+---
+
+### Failover Procedure (Platform Team Runbook)
+
+```mermaid
+flowchart TD
+    ALERT["🚨 Alert fires\nPlatform on-call paged"]
+    ASSESS["Platform team assesses\nIs PROD recoverable quickly?"]
+    MINOR["Minor incident\nRestart pods / rollback\nNo failover needed"]
+    DECLARE["Declare DR event\nEscalate to Platform lead\nOpen incident channel"]
+    DNS["Update DNS / load balancer\nRoute traffic to DR region\nTarget: < 5 min"]
+    PROMOTE["Promote DR cluster\nScale up Crossplane + ArgoCD\nEnable Backstage write mode"]
+    VALIDATE["Platform team validates\nCrossplane reconciling\nArgoCD syncing from Git\nBackstage portal serving"]
+    NOTIFY["Notify BU teams\n'Platform in DR mode — existing workloads unaffected.\nNew provisioning available shortly.'"]
+    MONITOR["Monitor DR cluster\nContinue incident response\non PROD region"]
+    RESTORE["Restore PROD region\nReprovision Orchestrator\nSync state from DR"]
+    FAILBACK["Failback to PROD\nReverse DNS\nScale down DR"]
+
+    ALERT --> ASSESS
+    ASSESS -->|recoverable| MINOR
+    ASSESS -->|not recoverable / SLA breach| DECLARE
+    DECLARE --> DNS
+    DNS --> PROMOTE
+    PROMOTE --> VALIDATE
+    VALIDATE --> NOTIFY
+    NOTIFY --> MONITOR
+    MONITOR --> RESTORE
+    RESTORE --> FAILBACK
+
+    style ALERT    fill:#DC2626,stroke:#991B1B,color:#FFFFFF,font-weight:bold
+    style ASSESS   fill:#D97706,stroke:#B45309,color:#FFFFFF
+    style MINOR    fill:#0D9488,stroke:#0F766E,color:#FFFFFF
+    style DECLARE  fill:#DC2626,stroke:#991B1B,color:#FFFFFF
+    style DNS      fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    style PROMOTE  fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    style VALIDATE fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    style NOTIFY   fill:#7C3AED,stroke:#5B21B6,color:#FFFFFF
+    style MONITOR  fill:#D97706,stroke:#B45309,color:#FFFFFF
+    style RESTORE  fill:#0D9488,stroke:#0F766E,color:#FFFFFF
+    style FAILBACK fill:#0D9488,stroke:#0F766E,color:#FFFFFF
+```
+
+---
+
+### Recovery Targets
+
+| Metric | Target | Notes |
+| ------ | ------ | ----- |
+| **RTO** (Recovery Time Objective) | < 15 minutes | Time from alert to DR cluster serving traffic |
+| **RPO** (Recovery Point Objective) | < 5 minutes | Maximum data loss (last Git commit + secret manager state) |
+| **Failback RTO** | < 30 minutes | Time to restore PROD and cut back from DR |
+
+---
+
+### Impact During DR Mode
+
+| What | Impact |
+| ---- | ------ |
+| **Running BU workloads** | None — BU dev/prod clusters run independently. Outage of the Orchestrator does not affect live application traffic. |
+| **New environment provisioning** | Paused during failover window (< 15 min), then restored on DR cluster |
+| **GitOps deployments** | Brief pause during failover, then ArgoCD on DR re-syncs from Git automatically |
+| **Backstage portal** | Unavailable during failover window, then restored on DR cluster |
+
+---
+
+### Platform Team Responsibilities
+
+| Responsibility | Owner |
+| -------------- | ----- |
+| Monitor Orchestrator health 24/7 | Platform on-call rotation |
+| Execute failover runbook | Platform team lead + on-call engineer |
+| Communicate status to BU teams | Platform team lead |
+| Maintain and test DR cluster monthly | Platform SRE |
+| Conduct quarterly failover drills | Platform team |
+| Restore PROD and execute failback | Platform SRE |
+| Post-incident review | Platform team + management |
