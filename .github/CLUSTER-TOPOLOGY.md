@@ -5,26 +5,31 @@
 A single **Orchestrator Cluster** (platform team owns, PROD + DR) runs Crossplane, ArgoCD, and Backstage. It holds no BU workloads — its sole job is to provision and manage infrastructure for every customer on demand via Custom Resource Definitions (CRDs).
 
 ```mermaid
-graph TD
-    subgraph ORCH["🎛️ ORCHESTRATOR CLUSTER  (platform team owns)"]
+graph LR
+    subgraph ORCH["🎛️ ORCHESTRATOR CLUSTER  —  platform team owns"]
+        direction TB
         ORCH_PROD["PROD\nCrossplane · ArgoCD · Backstage\nCustom Resource Definitions"]
-        ORCH_DR["DR  (active standby)"]
+        ORCH_DR["DR\nactive standby"]
         ORCH_PROD -.->|failover| ORCH_DR
     end
 
-    subgraph BUA["BU-A  (own cost center)"]
-        A_DEV["dev cluster"]
-        A_PROD["prod cluster"]
-    end
-
-    subgraph BUB["BU-B  (own cost center)"]
-        B_DEV["dev cluster"]
-        B_PROD["prod cluster"]
-    end
-
-    subgraph BUC["BU-C  (onboards later)"]
-        C_DEV["dev cluster"]
-        C_PROD["prod cluster"]
+    subgraph WORKLOADS["BU WORKLOAD CLUSTERS"]
+        direction TB
+        subgraph BUA["BU-A  (own cost center)"]
+            direction TB
+            A_DEV["dev cluster"]
+            A_PROD["prod cluster"]
+        end
+        subgraph BUB["BU-B  (own cost center)"]
+            direction TB
+            B_DEV["dev cluster"]
+            B_PROD["prod cluster"]
+        end
+        subgraph BUC["BU-C  (onboards later)"]
+            direction TB
+            C_DEV["dev cluster"]
+            C_PROD["prod cluster"]
+        end
     end
 
     ORCH_PROD -->|Crossplane provisions| A_DEV
@@ -34,9 +39,9 @@ graph TD
     ORCH_PROD -->|Crossplane provisions| C_DEV
     ORCH_PROD -->|Crossplane provisions| C_PROD
 
-    classDef orchProd   fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,font-weight:bold
-    classDef orchDR     fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
-    classDef devCluster fill:#0D9488,stroke:#0F766E,color:#FFFFFF
+    classDef orchProd    fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,font-weight:bold
+    classDef orchDR      fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef devCluster  fill:#0D9488,stroke:#0F766E,color:#FFFFFF
     classDef prodCluster fill:#D97706,stroke:#B45309,color:#FFFFFF
 
     class ORCH_PROD orchProd
@@ -65,16 +70,16 @@ graph TD
 ## How a BU Gets an Environment
 
 ```mermaid
-flowchart TD
-    DEV["👩‍💻 BU Engineer\n'I need a Kubernetes environment'"]
+flowchart LR
+    DEV["👩‍💻 BU Engineer\n━━━━━━━━━━━━━━\n'I need a Kubernetes\nenvironment'"]
 
-    PORTAL["Backstage Portal\n(hosted on Orchestrator Cluster)\nBU fills in: name · size · region · cost-center"]
+    PORTAL["Backstage Portal\n━━━━━━━━━━━━━━\nHosted on Orchestrator\nname · size · region\ncost-center"]
 
-    CRD["Environment CRD applied\nto Orchestrator Cluster\nPolicy gates: cost-center tag · approved region · no public LBs"]
+    CRD["Environment CRD\n━━━━━━━━━━━━━━\nApplied to Orchestrator\ncost-center tag\napproved region\nno public LBs"]
 
-    CROSSPLANE["Crossplane\n(on Orchestrator)\nReconciles the CRD\nProvisions cloud infra:\nVPC · cluster · node-pools · IAM"]
+    CROSSPLANE["Crossplane\n━━━━━━━━━━━━━━\nReconciles the CRD\nProvisions cloud infra\nVPC · cluster\nnode-pools · IAM"]
 
-    ARGOCD["ArgoCD\n(on Orchestrator)\nDetects new cluster\nDeploys app-of-apps:\ningress · cert-manager · observability agents\npolicy controllers · secrets operator · apps"]
+    ARGOCD["ArgoCD\n━━━━━━━━━━━━━━\nDetects new cluster\nDeploys app-of-apps\ningress · cert-manager\nobservability · policy\nsecrets operator · apps"]
 
     DEV --> PORTAL --> CRD --> CROSSPLANE --> ARGOCD
 
