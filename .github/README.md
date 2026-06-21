@@ -94,12 +94,6 @@ The orchestrator cluster is a flat tax on the platform team's budget. Every BU a
 
 ---
 
-## Phased Roadmap
-
-![IDP Adoption Roadmap](assets/roadmap.svg)
-
----
-
 ## Toolchain at a Glance
 
 | Plane | Tool | Role |
