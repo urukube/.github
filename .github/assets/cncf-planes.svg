@@ -1,0 +1,92 @@
+<svg viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif" font-size="12">
+  <title>Five CNCF Platform Planes</title>
+  <desc>The five platform planes: Observability and Security are cross-cutting bands. Developer Control, Integration and Delivery, and Resource planes stack vertically in the centre. Foundation sits at the base.</desc>
+
+  <rect width="900" height="420" fill="#ffffff"/>
+
+  <text x="450" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="#111827">Five CNCF Platform Planes</text>
+  <text x="450" y="44" text-anchor="middle" font-size="11" fill="#6b7280">Observability and Security are cross-cutting — they span all planes</text>
+
+  <!-- ── OBSERVABILITY (top cross-cutting band) ── -->
+  <rect x="20" y="58" width="860" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="90" y="78" text-anchor="middle" font-size="10" font-weight="700" fill="#5b21b6" transform="rotate(-90,90,95)" visibility="hidden"/>
+  <text x="450" y="78" text-anchor="middle" font-size="12" font-weight="700" fill="#5b21b6">🔭  OBSERVABILITY PLANE  —  cross-cutting</text>
+  <rect x="36" y="86" width="150" height="22" rx="4" fill="rgba(124,58,237,0.1)" stroke="#c4b5fd" stroke-width="1"/>
+  <text x="111" y="101" text-anchor="middle" font-size="10" fill="#5b21b6">Prometheus · Thanos · Mimir</text>
+  <rect x="196" y="86" width="120" height="22" rx="4" fill="rgba(124,58,237,0.1)" stroke="#c4b5fd" stroke-width="1"/>
+  <text x="256" y="101" text-anchor="middle" font-size="10" fill="#5b21b6">Grafana Dashboards</text>
+  <rect x="326" y="86" width="160" height="22" rx="4" fill="rgba(124,58,237,0.1)" stroke="#c4b5fd" stroke-width="1"/>
+  <text x="406" y="101" text-anchor="middle" font-size="10" fill="#5b21b6">OpenTelemetry Collector</text>
+  <rect x="496" y="86" width="110" height="22" rx="4" fill="rgba(124,58,237,0.1)" stroke="#c4b5fd" stroke-width="1"/>
+  <text x="551" y="101" text-anchor="middle" font-size="10" fill="#5b21b6">Loki · Tempo</text>
+
+  <!-- ── CORE PLANES (stacked, centre) ── -->
+
+  <!-- Developer Control -->
+  <rect x="20" y="126" width="860" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="450" y="146" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">🖥️  DEVELOPER CONTROL PLANE</text>
+  <rect x="100" y="154" width="160" height="28" rx="5" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="180" y="173" text-anchor="middle" font-size="11" font-weight="600" fill="#1d4ed8">Backstage Portal</text>
+  <rect x="280" y="154" width="200" height="28" rx="5" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="380" y="173" text-anchor="middle" font-size="11" font-weight="600" fill="#1d4ed8">Golden-path Templates</text>
+  <rect x="500" y="154" width="160" height="28" rx="5" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="580" y="173" text-anchor="middle" font-size="11" font-weight="600" fill="#1d4ed8">Service Catalog</text>
+
+  <!-- arrow down -->
+  <line x1="450" y1="192" x2="450" y2="200" stroke="#64748b" stroke-width="1.5"/>
+  <polygon points="444,200 456,200 450,208" fill="#64748b"/>
+
+  <!-- Integration & Delivery -->
+  <rect x="20" y="208" width="860" height="66" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+  <text x="450" y="228" text-anchor="middle" font-size="12" font-weight="700" fill="#064e3b">🔁  INTEGRATION &amp; DELIVERY PLANE</text>
+  <rect x="36" y="236" width="88" height="28" rx="5" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
+  <text x="80" y="255" text-anchor="middle" font-size="10" font-weight="600" fill="#047857">GitHub (VCS)</text>
+  <rect x="134" y="236" width="136" height="28" rx="5" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
+  <text x="202" y="255" text-anchor="middle" font-size="10" font-weight="600" fill="#047857">Crossplane (CRD infra)</text>
+  <rect x="280" y="236" width="130" height="28" rx="5" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
+  <text x="345" y="255" text-anchor="middle" font-size="10" font-weight="600" fill="#047857">JFrog Artifactory</text>
+  <rect x="420" y="236" width="116" height="28" rx="5" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
+  <text x="478" y="255" text-anchor="middle" font-size="10" font-weight="600" fill="#047857">ArgoCD · Kargo</text>
+  <rect x="546" y="236" width="130" height="28" rx="5" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
+  <text x="611" y="255" text-anchor="middle" font-size="10" font-weight="600" fill="#047857">Argo Rollouts</text>
+
+  <!-- arrow down -->
+  <line x1="450" y1="274" x2="450" y2="282" stroke="#64748b" stroke-width="1.5"/>
+  <polygon points="444,282 456,282 450,290" fill="#64748b"/>
+
+  <!-- Resource Plane -->
+  <rect x="20" y="290" width="860" height="66" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+  <text x="450" y="310" text-anchor="middle" font-size="12" font-weight="700" fill="#713f12">☸️  RESOURCE PLANE</text>
+  <rect x="100" y="318" width="220" height="28" rx="5" fill="#ffffff" stroke="#fde047" stroke-width="1.5"/>
+  <text x="210" y="337" text-anchor="middle" font-size="11" font-weight="600" fill="#92400e">Orchestrator Cluster (PROD + DR)</text>
+  <rect x="340" y="318" width="170" height="28" rx="5" fill="#ffffff" stroke="#fde047" stroke-width="1.5"/>
+  <text x="425" y="337" text-anchor="middle" font-size="11" font-weight="600" fill="#92400e">per-BU Dev Cluster</text>
+  <rect x="530" y="318" width="170" height="28" rx="5" fill="#ffffff" stroke="#fde047" stroke-width="1.5"/>
+  <text x="615" y="337" text-anchor="middle" font-size="11" font-weight="600" fill="#92400e">per-BU Prod Cluster</text>
+
+  <!-- arrow down -->
+  <line x1="450" y1="356" x2="450" y2="364" stroke="#64748b" stroke-width="1.5"/>
+  <polygon points="444,364 456,364 450,372" fill="#64748b"/>
+
+  <!-- Foundation -->
+  <rect x="20" y="372" width="860" height="34" rx="8" fill="#f1f5f9" stroke="#475569" stroke-width="1.5"/>
+  <text x="450" y="386" text-anchor="middle" font-size="11" font-weight="700" fill="#1e293b">🏗️  FOUNDATION</text>
+  <text x="210" y="400" text-anchor="middle" font-size="10" fill="#475569">Landing Zone (1 account / BU / env)</text>
+  <text x="450" y="400" text-anchor="middle" font-size="10" fill="#475569">Network Hub-Spoke (VPC peering)</text>
+  <text x="700" y="400" text-anchor="middle" font-size="10" fill="#475569">Identity / SSO · Git &amp; IaC layout</text>
+
+  <!-- ── SECURITY (right cross-cutting band) ── -->
+  <rect x="718" y="86" width="162" height="276" rx="8" fill="#ffe4e6" stroke="#e11d48" stroke-width="2"/>
+  <text x="799" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#881337">🔒 SECURITY</text>
+  <text x="799" y="136" text-anchor="middle" font-size="10" font-weight="600" fill="#9f1239">cross-cutting</text>
+  <rect x="728" y="148" width="142" height="20" rx="4" fill="rgba(225,29,72,0.1)" stroke="#fda4af" stroke-width="1"/>
+  <text x="799" y="162" text-anchor="middle" font-size="10" fill="#9f1239">ESO · OIDC · SPIFFE/SPIRE</text>
+  <rect x="728" y="174" width="142" height="20" rx="4" fill="rgba(225,29,72,0.1)" stroke="#fda4af" stroke-width="1"/>
+  <text x="799" y="188" text-anchor="middle" font-size="10" fill="#9f1239">Kyverno · OPA/Gatekeeper</text>
+  <rect x="728" y="200" width="142" height="20" rx="4" fill="rgba(225,29,72,0.1)" stroke="#fda4af" stroke-width="1"/>
+  <text x="799" y="214" text-anchor="middle" font-size="10" fill="#9f1239">Cilium (CNI + netpol)</text>
+  <rect x="728" y="226" width="142" height="20" rx="4" fill="rgba(225,29,72,0.1)" stroke="#fda4af" stroke-width="1"/>
+  <text x="799" y="240" text-anchor="middle" font-size="10" fill="#9f1239">cosign · SBOM</text>
+  <rect x="728" y="252" width="142" height="20" rx="4" fill="rgba(225,29,72,0.1)" stroke="#fda4af" stroke-width="1"/>
+  <text x="799" y="266" text-anchor="middle" font-size="10" fill="#9f1239">IRSA / workload identity</text>
+</svg>

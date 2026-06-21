@@ -52,51 +52,7 @@ Once a BU's clusters are provisioned, their developers work entirely through Git
 
 ## Cluster Topology
 
-```mermaid
-graph LR
-    subgraph ORCH["🎛️ ORCHESTRATOR CLUSTER  —  platform team owns"]
-        direction TB
-        ORCH_PROD["PROD\nCrossplane · ArgoCD · Backstage\nCustom Resource Definitions"]
-        ORCH_DR["DR\nactive standby"]
-        ORCH_PROD -.->|failover| ORCH_DR
-    end
-
-    subgraph WORKLOADS["BU WORKLOAD CLUSTERS"]
-        direction TB
-        subgraph BUA["BU-A  (own cost center)"]
-            direction TB
-            A_DEV["dev cluster"]
-            A_PROD["prod cluster"]
-        end
-        subgraph BUB["BU-B  (own cost center)"]
-            direction TB
-            B_DEV["dev cluster"]
-            B_PROD["prod cluster"]
-        end
-        subgraph BUC["BU-C  (onboards later)"]
-            direction TB
-            C_DEV["dev cluster"]
-            C_PROD["prod cluster"]
-        end
-    end
-
-    ORCH_PROD -->|Crossplane provisions| A_DEV
-    ORCH_PROD -->|Crossplane provisions| A_PROD
-    ORCH_PROD -->|Crossplane provisions| B_DEV
-    ORCH_PROD -->|Crossplane provisions| B_PROD
-    ORCH_PROD -->|Crossplane provisions| C_DEV
-    ORCH_PROD -->|Crossplane provisions| C_PROD
-
-    classDef orchProd    fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,font-weight:bold
-    classDef orchDR      fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
-    classDef devCluster  fill:#0D9488,stroke:#0F766E,color:#FFFFFF
-    classDef prodCluster fill:#D97706,stroke:#B45309,color:#FFFFFF
-
-    class ORCH_PROD orchProd
-    class ORCH_DR orchDR
-    class A_DEV,B_DEV,C_DEV devCluster
-    class A_PROD,B_PROD,C_PROD prodCluster
-```
+![Cluster Topology](assets/cluster-topology.svg)
 
 > Full topology diagram, component breakdown, and DR strategy: [CLUSTER-TOPOLOGY.md](CLUSTER-TOPOLOGY.md)
 
@@ -104,28 +60,7 @@ graph LR
 
 ## GitOps Promotion Flow
 
-```mermaid
-flowchart LR
-    PUSH["👩‍💻 Developer\n━━━━━━━━━━━━\nPushes code"]
-    PR["GitHub PR\n━━━━━━━━━━━━\nReview → merge"]
-    CI["CI Build\n━━━━━━━━━━━━\nImage built + signed\nSBOM generated\nPushed to JFrog"]
-    DEV_GIT["Git update\n━━━━━━━━━━━━\nBump image tag\ndev overlay"]
-    DEV_SYNC["ArgoCD\n━━━━━━━━━━━━\nReconciles\ndev cluster ✅"]
-    PROMOTE["Promotion\n━━━━━━━━━━━━\nKargo pipeline\nor overlay bump"]
-    PROD_GIT["Git update\n━━━━━━━━━━━━\nBump image tag\nprod overlay"]
-    PROD_SYNC["ArgoCD\n━━━━━━━━━━━━\nReconciles\nprod cluster\ncanary / blue-green ✅"]
-
-    PUSH --> PR --> CI --> DEV_GIT --> DEV_SYNC --> PROMOTE --> PROD_GIT --> PROD_SYNC
-
-    style PUSH      fill:#1D4ED8,stroke:#1E3A8A,color:#FFFFFF,font-weight:bold
-    style PR        fill:#1D4ED8,stroke:#1E3A8A,color:#FFFFFF
-    style CI        fill:#7C3AED,stroke:#5B21B6,color:#FFFFFF
-    style DEV_GIT   fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    style DEV_SYNC  fill:#0D9488,stroke:#0F766E,color:#FFFFFF
-    style PROMOTE   fill:#D97706,stroke:#B45309,color:#FFFFFF,font-weight:bold
-    style PROD_GIT  fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    style PROD_SYNC fill:#DC2626,stroke:#991B1B,color:#FFFFFF,font-weight:bold
-```
+![GitOps Promotion Flow](assets/gitops-promotion.svg)
 
 > Full flow diagram, stage breakdown, and key principles: [GITOPS-PROMOTION.md](GITOPS-PROMOTION.md)
 
@@ -153,83 +88,7 @@ The orchestrator cluster is a flat tax on the platform team's budget. Every BU a
 
 ## Five CNCF Platform Planes
 
-```mermaid
-block-beta
-  columns 1
-
-  block:observability["🔭 OBSERVABILITY PLANE — cross-cutting"]
-    OBS1["Prometheus · Thanos · Mimir"]
-    OBS2["Grafana Dashboards"]
-    OBS3["OpenTelemetry Collector"]
-    OBS4["Loki · Tempo"]
-  end
-
-  space
-
-  block:developer["🖥️ DEVELOPER CONTROL PLANE"]
-    A["Backstage Portal"]
-    B["Golden-path Templates"]
-    C["Service Catalog"]
-  end
-
-  space
-
-  block:delivery["🔁 INTEGRATION & DELIVERY PLANE"]
-    D["GitHub (VCS)"]
-    E["Crossplane (CRD-driven infra)"]
-    F["JFrog Artifactory"]
-    G["ArgoCD · Kargo · Argo Rollouts"]
-  end
-
-  space
-
-  block:resource["☸️ RESOURCE PLANE"]
-    H["Orchestrator Cluster (PROD + DR)"]
-    I["per-BU Dev Cluster"]
-    J["per-BU Prod Cluster"]
-  end
-
-  space
-
-  block:foundation["🏗️ FOUNDATION"]
-    K["Landing Zone (1 account/BU/env)"]
-    L["Network Hub-Spoke (VPC peering)"]
-    M["Identity / SSO · Git & IaC layout"]
-  end
-
-  space
-
-  block:security["🔒 SECURITY PLANE — cross-cutting"]
-    SEC1["ESO · OIDC · SPIFFE/SPIRE"]
-    SEC2["Kyverno · OPA/Gatekeeper"]
-    SEC3["Cilium · cosign · SBOM"]
-  end
-
-  developer --> delivery
-  delivery --> resource
-  resource --> foundation
-
-  classDef obsClass   fill:#EDE9FE,stroke:#7C3AED,color:#3730A3
-  classDef devClass   fill:#DBEAFE,stroke:#2563EB,color:#1E3A8A
-  classDef delivClass fill:#D1FAE5,stroke:#059669,color:#064E3B
-  classDef resClass   fill:#FEF9C3,stroke:#CA8A04,color:#713F12
-  classDef foundClass fill:#F1F5F9,stroke:#475569,color:#1E293B
-  classDef secClass   fill:#FFE4E6,stroke:#E11D48,color:#881337
-
-  class OBS1,OBS2,OBS3,OBS4 obsClass
-  class A,B,C devClass
-  class D,E,F,G delivClass
-  class H,I,J resClass
-  class K,L,M foundClass
-  class SEC1,SEC2,SEC3 secClass
-
-  style observability fill:#EDE9FE,stroke:#7C3AED,color:#3730A3
-  style developer     fill:#DBEAFE,stroke:#2563EB,color:#1E3A8A
-  style delivery      fill:#D1FAE5,stroke:#059669,color:#064E3B
-  style resource      fill:#FEF9C3,stroke:#CA8A04,color:#713F12
-  style foundation    fill:#F1F5F9,stroke:#475569,color:#1E293B
-  style security      fill:#FFE4E6,stroke:#E11D48,color:#881337
-```
+![Five CNCF Platform Planes](assets/cncf-planes.svg)
 
 > Observability and Security are **cross-cutting** — they span all three core planes.
 
@@ -237,31 +96,7 @@ block-beta
 
 ## Phased Roadmap
 
-```mermaid
-timeline
-    title IDP Adoption Roadmap
-    Phase 0 - Foundations      : Landing zone (1 account per BU per env)
-                               : Network hub-spoke (peered VPCs)
-                               : Identity / SSO + workload identity
-                               : Git & IaC repo layout
-    Phase 1 - Spine · 1 BU    : Orchestrator cluster (PROD + DR)
-    (TODAY)                    : Crossplane + ArgoCD + Backstage on Orchestrator
-                               : Dev + prod clusters for pilot BU via CRD
-                               : Reference app deployed
-                               : Dev → prod promotion via Git
-    Phase 2 - Productionize    : Spacelift + OPA policy-as-code
-                               : ApplicationSets
-                               : Kargo promotion pipelines
-                               : Argo Rollouts (canary / blue-green)
-    Phase 3 - Shared Planes    : Org-wide observability (per-tenant scoped)
-                               : External Secrets Operator
-                               : Kyverno admission policy
-                               : cosign / SBOM / supply-chain controls
-                               : Network policy (Cilium)
-    Phase 4 - Self-Service     : Backstage golden path
-                               : request env → Spacelift → clusters + repo scaffold
-                               : (once 2–3 BUs exist and golden path is stable)
-```
+![IDP Adoption Roadmap](assets/roadmap.svg)
 
 ---
 

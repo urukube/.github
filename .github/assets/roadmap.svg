@@ -1,0 +1,112 @@
+<svg viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif" font-size="12">
+  <title>IDP Adoption Roadmap</title>
+  <desc>Five phases: Phase 0 Foundations, Phase 1 Spine and first BU (current), Phase 2 Productionise, Phase 3 Shared Planes, Phase 4 Full Self-Service.</desc>
+
+  <rect width="900" height="380" fill="#ffffff"/>
+
+  <text x="450" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="#111827">IDP Adoption Roadmap</text>
+  <text x="450" y="44" text-anchor="middle" font-size="11" fill="#6b7280">Phased rollout — each phase builds on the last · platform cost stays flat as BU count grows</text>
+
+  <!-- ── TIMELINE SPINE ── -->
+  <line x1="60" y1="96" x2="860" y2="96" stroke="#e2e8f0" stroke-width="3"/>
+
+  <!-- Phase nodes on spine -->
+  <!-- Phase 0: x=100 -->
+  <!-- Phase 1: x=260 -->
+  <!-- Phase 2: x=460 -->
+  <!-- Phase 3: x=640 -->
+  <!-- Phase 4: x=820 -->
+
+  <!-- ══ PHASE 0 ══ -->
+  <circle cx="100" cy="96" r="14" fill="#475569" stroke="#1e293b" stroke-width="2"/>
+  <text x="100" y="101" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">0</text>
+
+  <rect x="20" y="118" width="160" height="180" rx="8" fill="#f1f5f9" stroke="#475569" stroke-width="1.5"/>
+  <rect x="20" y="118" width="160" height="26" rx="8" fill="#334155"/>
+  <text x="100" y="136" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Phase 0 — Foundations</text>
+  <text x="100" y="162" text-anchor="middle" font-size="9" fill="#475569">Landing zone</text>
+  <text x="100" y="176" text-anchor="middle" font-size="9" fill="#475569">1 account per BU per env</text>
+  <text x="100" y="193" text-anchor="middle" font-size="9" fill="#475569">Network hub-spoke</text>
+  <text x="100" y="207" text-anchor="middle" font-size="9" fill="#475569">VPC peering</text>
+  <text x="100" y="224" text-anchor="middle" font-size="9" fill="#475569">Identity / SSO</text>
+  <text x="100" y="238" text-anchor="middle" font-size="9" fill="#475569">Workload identity</text>
+  <text x="100" y="255" text-anchor="middle" font-size="9" fill="#475569">Git &amp; IaC repo layout</text>
+  <line x1="100" y1="96" x2="100" y2="118" stroke="#475569" stroke-width="1.5"/>
+
+  <!-- ══ PHASE 1 ══  (TODAY — highlighted) -->
+  <circle cx="290" cy="96" r="16" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="2.5"/>
+  <text x="290" y="101" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">1</text>
+  <!-- TODAY badge -->
+  <rect x="254" y="56" width="72" height="20" rx="10" fill="#1d4ed8"/>
+  <text x="290" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">TODAY</text>
+  <line x1="290" y1="76" x2="290" y2="96" stroke="#1d4ed8" stroke-width="1.5"/>
+
+  <rect x="210" y="118" width="160" height="208" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <rect x="210" y="118" width="160" height="26" rx="8" fill="#1d4ed8"/>
+  <text x="290" y="136" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Phase 1 — Spine · 1 BU</text>
+  <text x="290" y="162" text-anchor="middle" font-size="9" fill="#1e40af">Orchestrator cluster</text>
+  <text x="290" y="176" text-anchor="middle" font-size="9" fill="#1e40af">PROD + DR</text>
+  <text x="290" y="193" text-anchor="middle" font-size="9" fill="#1e40af">Crossplane + ArgoCD</text>
+  <text x="290" y="207" text-anchor="middle" font-size="9" fill="#1e40af">+ Backstage on Orchestrator</text>
+  <text x="290" y="224" text-anchor="middle" font-size="9" fill="#1e40af">Dev + prod clusters for</text>
+  <text x="290" y="238" text-anchor="middle" font-size="9" fill="#1e40af">pilot BU via CRD</text>
+  <text x="290" y="255" text-anchor="middle" font-size="9" fill="#1e40af">Reference app deployed</text>
+  <text x="290" y="272" text-anchor="middle" font-size="9" fill="#1e40af">Dev → prod promotion</text>
+  <text x="290" y="286" text-anchor="middle" font-size="9" fill="#1e40af">via Git</text>
+  <line x1="290" y1="96" x2="290" y2="118" stroke="#1d4ed8" stroke-width="2"/>
+
+  <!-- ══ PHASE 2 ══ -->
+  <circle cx="470" cy="96" r="14" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+  <text x="470" y="101" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">2</text>
+
+  <rect x="390" y="118" width="160" height="190" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="390" y="118" width="160" height="26" rx="8" fill="#64748b"/>
+  <text x="470" y="136" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Phase 2 — Productionise</text>
+  <text x="470" y="162" text-anchor="middle" font-size="9" fill="#64748b">Spacelift + OPA</text>
+  <text x="470" y="176" text-anchor="middle" font-size="9" fill="#64748b">policy-as-code</text>
+  <text x="470" y="193" text-anchor="middle" font-size="9" fill="#64748b">ApplicationSets</text>
+  <text x="470" y="210" text-anchor="middle" font-size="9" fill="#64748b">Kargo promotion</text>
+  <text x="470" y="224" text-anchor="middle" font-size="9" fill="#64748b">pipelines</text>
+  <text x="470" y="241" text-anchor="middle" font-size="9" fill="#64748b">Argo Rollouts</text>
+  <text x="470" y="255" text-anchor="middle" font-size="9" fill="#64748b">canary / blue-green</text>
+  <line x1="470" y1="96" x2="470" y2="118" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <!-- ══ PHASE 3 ══ -->
+  <circle cx="650" cy="96" r="14" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+  <text x="650" y="101" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">3</text>
+
+  <rect x="570" y="118" width="160" height="208" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="570" y="118" width="160" height="26" rx="8" fill="#64748b"/>
+  <text x="650" y="136" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Phase 3 — Shared Planes</text>
+  <text x="650" y="162" text-anchor="middle" font-size="9" fill="#64748b">Org-wide observability</text>
+  <text x="650" y="176" text-anchor="middle" font-size="9" fill="#64748b">per-tenant scoped</text>
+  <text x="650" y="193" text-anchor="middle" font-size="9" fill="#64748b">External Secrets Operator</text>
+  <text x="650" y="210" text-anchor="middle" font-size="9" fill="#64748b">Kyverno admission</text>
+  <text x="650" y="224" text-anchor="middle" font-size="9" fill="#64748b">policy</text>
+  <text x="650" y="241" text-anchor="middle" font-size="9" fill="#64748b">cosign / SBOM</text>
+  <text x="650" y="255" text-anchor="middle" font-size="9" fill="#64748b">supply-chain controls</text>
+  <text x="650" y="272" text-anchor="middle" font-size="9" fill="#64748b">Cilium network policy</text>
+  <line x1="650" y1="96" x2="650" y2="118" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <!-- ══ PHASE 4 ══ -->
+  <circle cx="840" cy="96" r="14" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+  <text x="840" y="101" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">4</text>
+
+  <rect x="760" y="118" width="122" height="190" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="760" y="118" width="122" height="26" rx="8" fill="#64748b"/>
+  <text x="821" y="133" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">Phase 4 — Self-Service</text>
+  <text x="821" y="158" text-anchor="middle" font-size="9" fill="#64748b">Backstage golden</text>
+  <text x="821" y="172" text-anchor="middle" font-size="9" fill="#64748b">path</text>
+  <text x="821" y="189" text-anchor="middle" font-size="9" fill="#64748b">request env →</text>
+  <text x="821" y="203" text-anchor="middle" font-size="9" fill="#64748b">Spacelift →</text>
+  <text x="821" y="217" text-anchor="middle" font-size="9" fill="#64748b">clusters + repo</text>
+  <text x="821" y="231" text-anchor="middle" font-size="9" fill="#64748b">scaffold</text>
+  <text x="821" y="252" text-anchor="middle" font-size="9" font-style="italic" fill="#94a3b8">stable after</text>
+  <text x="821" y="266" text-anchor="middle" font-size="9" font-style="italic" fill="#94a3b8">2–3 BUs onboard</text>
+  <line x1="840" y1="96" x2="840" y2="118" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <!-- ── ECONOMICS NOTE ── -->
+  <rect x="20" y="336" width="860" height="32" rx="6" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
+  <text x="450" y="350" text-anchor="middle" font-size="10" font-weight="700" fill="#166534">Economic principle</text>
+  <text x="450" y="364" text-anchor="middle" font-size="10" fill="#16a34a">Orchestrator is a flat platform cost. Each new BU rides existing Backstage + Crossplane + ArgoCD capacity — cost per tenant trends down as adoption grows.</text>
+</svg>

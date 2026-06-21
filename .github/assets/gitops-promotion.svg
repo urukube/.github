@@ -1,0 +1,122 @@
+<svg viewBox="0 0 900 310" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif" font-size="12">
+  <title>GitOps Promotion Flow</title>
+  <desc>Full delivery pipeline: developer pushes code, CI builds and signs the image, ArgoCD reconciles the dev cluster, Kargo promotes to prod, Argo Rollouts executes canary or blue-green on prod.</desc>
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="310" fill="#ffffff"/>
+
+  <text x="450" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="#111827">GitOps Promotion Flow</text>
+  <text x="450" y="44" text-anchor="middle" font-size="11" fill="#6b7280">Git is the source of truth · ArgoCD reconciles · promotion is a Git operation · no direct kubectl applies</text>
+
+  <!-- ── DEV PATH header ── -->
+  <rect x="20" y="58" width="530" height="18" rx="4" fill="#1e293b"/>
+  <text x="285" y="71" text-anchor="middle" font-size="10" font-weight="700" fill="#94a3b8" letter-spacing="0.8">DEV PATH</text>
+
+  <!-- ── PROD PATH header ── -->
+  <rect x="562" y="58" width="318" height="18" rx="4" fill="#7f1d1d"/>
+  <text x="721" y="71" text-anchor="middle" font-size="10" font-weight="700" fill="#fca5a5" letter-spacing="0.8">PROD PATH</text>
+
+  <!-- Step 1: Developer -->
+  <rect x="20" y="82" width="118" height="130" rx="7" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <rect x="20" y="82" width="118" height="26" rx="7" fill="#1d4ed8"/>
+  <text x="79" y="99" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Developer</text>
+  <text x="79" y="120" text-anchor="middle" font-size="9" fill="#1e40af">Pushes code to repo</text>
+  <text x="79" y="134" text-anchor="middle" font-size="9" fill="#1e40af">Opens GitHub PR</text>
+  <text x="79" y="148" text-anchor="middle" font-size="9" fill="#1e40af">Peer review gates</text>
+  <text x="79" y="162" text-anchor="middle" font-size="9" fill="#1e40af">merge to main</text>
+  <text x="79" y="200" text-anchor="middle" font-size="9" font-style="italic" fill="#60a5fa">git push → PR → merge</text>
+
+  <line x1="138" y1="147" x2="154" y2="147" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 2: CI Build -->
+  <rect x="158" y="82" width="118" height="130" rx="7" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <rect x="158" y="82" width="118" height="26" rx="7" fill="#6d28d9"/>
+  <text x="217" y="99" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">CI Build</text>
+  <text x="217" y="120" text-anchor="middle" font-size="9" fill="#5b21b6">GitHub Actions</text>
+  <text x="217" y="134" text-anchor="middle" font-size="9" fill="#5b21b6">Build + test image</text>
+  <text x="217" y="148" text-anchor="middle" font-size="9" fill="#5b21b6">Sign with cosign</text>
+  <text x="217" y="162" text-anchor="middle" font-size="9" fill="#5b21b6">Generate SBOM</text>
+  <text x="217" y="176" text-anchor="middle" font-size="9" fill="#5b21b6">Push to JFrog</text>
+  <text x="217" y="200" text-anchor="middle" font-size="9" font-style="italic" fill="#a78bfa">unsigned images rejected</text>
+
+  <line x1="276" y1="147" x2="292" y2="147" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 3: Git dev update -->
+  <rect x="296" y="82" width="118" height="130" rx="7" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+  <rect x="296" y="82" width="118" height="26" rx="7" fill="#4f46e5"/>
+  <text x="355" y="99" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Git Update</text>
+  <text x="355" y="120" text-anchor="middle" font-size="9" fill="#3730a3">Automation bumps</text>
+  <text x="355" y="134" text-anchor="middle" font-size="9" fill="#3730a3">image tag in the</text>
+  <text x="355" y="148" text-anchor="middle" font-size="9" fill="#3730a3">dev Kustomize overlay</text>
+  <text x="355" y="176" text-anchor="middle" font-size="9" fill="#3730a3">Git is source of truth —</text>
+  <text x="355" y="188" text-anchor="middle" font-size="9" fill="#3730a3">no direct kubectl</text>
+
+  <line x1="414" y1="147" x2="430" y2="147" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 4: ArgoCD dev sync -->
+  <rect x="434" y="82" width="118" height="130" rx="7" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+  <rect x="434" y="82" width="118" height="26" rx="7" fill="#047857"/>
+  <text x="493" y="99" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">ArgoCD</text>
+  <text x="493" y="120" text-anchor="middle" font-size="9" fill="#065f46">Detects Git change</text>
+  <text x="493" y="134" text-anchor="middle" font-size="9" fill="#065f46">Reconciles dev cluster</text>
+  <text x="493" y="148" text-anchor="middle" font-size="9" fill="#065f46">Scoped to BU's cluster</text>
+  <text x="493" y="162" text-anchor="middle" font-size="9" fill="#065f46">only — isolation</text>
+  <text x="493" y="176" text-anchor="middle" font-size="9" fill="#065f46">enforced by App</text>
+  <text x="493" y="190" text-anchor="middle" font-size="9" fill="#065f46">definition</text>
+  <text x="493" y="205" text-anchor="middle" font-size="10" fill="#34d399">✓ dev cluster synced</text>
+
+  <!-- Promotion arrow (down then right) -->
+  <path d="M552,212 L552,236 L562,236" stroke="#d97706" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+  <text x="546" y="230" font-size="9" font-weight="700" fill="#d97706" text-anchor="end">promote</text>
+
+  <!-- Step 5: Kargo Promotion -->
+  <rect x="562" y="82" width="118" height="130" rx="7" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <rect x="562" y="82" width="118" height="26" rx="7" fill="#b45309"/>
+  <text x="621" y="99" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Kargo Pipeline</text>
+  <text x="621" y="120" text-anchor="middle" font-size="9" fill="#713f12">Multi-stage promotion</text>
+  <text x="621" y="134" text-anchor="middle" font-size="9" fill="#713f12">Validates image tag</text>
+  <text x="621" y="148" text-anchor="middle" font-size="9" fill="#713f12">from dev environment</text>
+  <text x="621" y="162" text-anchor="middle" font-size="9" fill="#713f12">Gates on quality</text>
+  <text x="621" y="176" text-anchor="middle" font-size="9" fill="#713f12">criteria before prod</text>
+  <text x="621" y="200" text-anchor="middle" font-size="9" font-style="italic" fill="#fbbf24">Phase 2 — Kargo</text>
+
+  <line x1="680" y1="147" x2="696" y2="147" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 6: Git prod update -->
+  <rect x="700" y="82" width="80" height="130" rx="7" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+  <rect x="700" y="82" width="80" height="26" rx="7" fill="#4f46e5"/>
+  <text x="740" y="99" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Git Update</text>
+  <text x="740" y="120" text-anchor="middle" font-size="9" fill="#3730a3">Bump tag in</text>
+  <text x="740" y="134" text-anchor="middle" font-size="9" fill="#3730a3">prod Kustomize</text>
+  <text x="740" y="148" text-anchor="middle" font-size="9" fill="#3730a3">overlay</text>
+
+  <line x1="780" y1="147" x2="796" y2="147" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 7: ArgoCD + Rollouts prod -->
+  <rect x="800" y="82" width="82" height="130" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <rect x="800" y="82" width="82" height="26" rx="7" fill="#b91c1c"/>
+  <text x="841" y="99" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Prod Sync</text>
+  <text x="841" y="118" text-anchor="middle" font-size="9" fill="#7f1d1d">ArgoCD syncs</text>
+  <text x="841" y="131" text-anchor="middle" font-size="9" fill="#7f1d1d">prod cluster</text>
+  <text x="841" y="148" text-anchor="middle" font-size="9" fill="#991b1b">Argo Rollouts</text>
+  <text x="841" y="161" text-anchor="middle" font-size="9" fill="#991b1b">canary or</text>
+  <text x="841" y="174" text-anchor="middle" font-size="9" fill="#991b1b">blue-green</text>
+  <text x="841" y="200" text-anchor="middle" font-size="10" fill="#f87171">✓ prod synced</text>
+
+  <!-- ── Key principles ── -->
+  <rect x="20" y="228" width="860" height="70" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="450" y="246" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">Key Principles</text>
+
+  <rect x="32" y="256" width="8" height="8" rx="1" fill="#1d4ed8"/>
+  <text x="46" y="265" font-size="10" fill="#374151"><tspan font-weight="600">Git is source of truth.</tspan> No direct kubectl applies to any cluster — all changes go through Git.</text>
+
+  <rect x="32" y="272" width="8" height="8" rx="1" fill="#047857"/>
+  <text x="46" y="281" font-size="10" fill="#374151"><tspan font-weight="600">Promotion is a Git operation.</tspan> Kargo or a manual overlay bump triggers prod. There is no "push to prod" button.</text>
+
+  <rect x="32" y="288" width="8" height="8" rx="1" fill="#b91c1c"/>
+  <text x="46" y="297" font-size="10" fill="#374151"><tspan font-weight="600">Progressive delivery on prod.</tspan> Argo Rollouts manages canary/blue-green so bad releases are caught before full traffic shift.</text>
+</svg>
