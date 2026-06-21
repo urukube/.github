@@ -1,0 +1,107 @@
+<svg viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif" font-size="12">
+  <title>How a BU Gets an Environment</title>
+  <desc>Flow from BU Engineer submitting a request in Backstage, through CRD creation, Crossplane provisioning of infra, to ArgoCD deploying add-ons.</desc>
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="280" fill="#ffffff"/>
+
+  <text x="450" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="#111827">How a BU Gets an Environment</text>
+  <text x="450" y="44" text-anchor="middle" font-size="11" fill="#6b7280">CRDs declare intent · Crossplane provisions infra · ArgoCD delivers everything else</text>
+
+  <!-- Step boxes -->
+  <!-- 1: BU Engineer -->
+  <rect x="20" y="60" width="148" height="160" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <rect x="20" y="60" width="148" height="30" rx="8" fill="#1d4ed8"/>
+  <text x="94" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">BU Engineer</text>
+  <text x="94" y="108" text-anchor="middle" font-size="10" fill="#1e40af">Opens Backstage portal</text>
+  <text x="94" y="123" text-anchor="middle" font-size="10" fill="#1e40af">Fills in request form:</text>
+  <text x="94" y="140" text-anchor="middle" font-size="9" fill="#3b82f6">· AWS account IDs (dev+prod)</text>
+  <text x="94" y="155" text-anchor="middle" font-size="9" fill="#3b82f6">· Region + sizing</text>
+  <text x="94" y="170" text-anchor="middle" font-size="9" fill="#3b82f6">· Cost-center tag</text>
+  <text x="94" y="185" text-anchor="middle" font-size="9" fill="#3b82f6">· Team contacts</text>
+  <text x="94" y="203" text-anchor="middle" font-size="9" font-style="italic" fill="#60a5fa">clicks "Request Environment"</text>
+
+  <!-- arrow 1→2 -->
+  <line x1="168" y1="140" x2="188" y2="140" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 2: Environment CRD -->
+  <rect x="192" y="60" width="148" height="160" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <rect x="192" y="60" width="148" height="30" rx="8" fill="#7c3aed"/>
+  <text x="266" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Environment CRD</text>
+  <text x="266" y="108" text-anchor="middle" font-size="10" fill="#5b21b6">Applied to Orchestrator</text>
+  <text x="266" y="123" text-anchor="middle" font-size="10" fill="#5b21b6">cluster by Backstage</text>
+  <text x="266" y="145" text-anchor="middle" font-size="9" fill="#7c3aed">· BU name + account IDs</text>
+  <text x="266" y="160" text-anchor="middle" font-size="9" fill="#7c3aed">· Approved region</text>
+  <text x="266" y="175" text-anchor="middle" font-size="9" fill="#7c3aed">· Cost-center tag</text>
+  <text x="266" y="190" text-anchor="middle" font-size="9" fill="#7c3aed">· Policy guardrails</text>
+  <text x="266" y="210" text-anchor="middle" font-size="9" font-style="italic" fill="#a78bfa">no public LBs enforced</text>
+
+  <!-- arrow 2→3 -->
+  <line x1="340" y1="140" x2="360" y2="140" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 3: Crossplane -->
+  <rect x="364" y="60" width="148" height="160" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+  <rect x="364" y="60" width="148" height="30" rx="8" fill="#047857"/>
+  <text x="438" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Crossplane</text>
+  <text x="438" y="108" text-anchor="middle" font-size="10" fill="#065f46">Reconciles the CRD</text>
+  <text x="438" y="123" text-anchor="middle" font-size="10" fill="#065f46">Assumes cross-account role</text>
+  <text x="438" y="143" text-anchor="middle" font-size="9" fill="#059669">Provisions in BU AWS accounts:</text>
+  <text x="438" y="158" text-anchor="middle" font-size="9" fill="#059669">· VPC + subnets</text>
+  <text x="438" y="173" text-anchor="middle" font-size="9" fill="#059669">· EKS cluster + nodes</text>
+  <text x="438" y="188" text-anchor="middle" font-size="9" fill="#059669">· IAM roles (IRSA + OIDC)</text>
+  <text x="438" y="203" text-anchor="middle" font-size="9" fill="#059669">· Bootstrap add-ons</text>
+
+  <!-- arrow 3→4 -->
+  <line x1="512" y1="140" x2="532" y2="140" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 4: ArgoCD -->
+  <rect x="536" y="60" width="148" height="160" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <rect x="536" y="60" width="148" height="30" rx="8" fill="#b45309"/>
+  <text x="610" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">ArgoCD</text>
+  <text x="610" y="108" text-anchor="middle" font-size="10" fill="#713f12">Detects new cluster</text>
+  <text x="610" y="123" text-anchor="middle" font-size="10" fill="#713f12">(registered by Crossplane)</text>
+  <text x="610" y="143" text-anchor="middle" font-size="9" fill="#92400e">Deploys app-of-apps:</text>
+  <text x="610" y="158" text-anchor="middle" font-size="9" fill="#92400e">· Ingress controller</text>
+  <text x="610" y="173" text-anchor="middle" font-size="9" fill="#92400e">· cert-manager</text>
+  <text x="610" y="188" text-anchor="middle" font-size="9" fill="#92400e">· Observability agents</text>
+  <text x="610" y="203" text-anchor="middle" font-size="9" fill="#92400e">· Policy controllers</text>
+
+  <!-- arrow 4→5 -->
+  <line x1="684" y1="140" x2="704" y2="140" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 5: Ready -->
+  <rect x="708" y="60" width="172" height="160" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <rect x="708" y="60" width="172" height="30" rx="8" fill="#15803d"/>
+  <text x="794" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">Environment Ready</text>
+  <text x="794" y="108" text-anchor="middle" font-size="10" fill="#166534">BU has two clusters:</text>
+  <rect x="720" y="118" width="148" height="34" rx="4" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
+  <text x="794" y="133" text-anchor="middle" font-size="10" font-weight="600" fill="#065f46">dev cluster</text>
+  <text x="794" y="147" text-anchor="middle" font-size="9" fill="#16a34a">BU dev AWS account</text>
+  <rect x="720" y="158" width="148" height="34" rx="4" fill="#fef9c3" stroke="#fbbf24" stroke-width="1"/>
+  <text x="794" y="173" text-anchor="middle" font-size="10" font-weight="600" fill="#713f12">prod cluster</text>
+  <text x="794" y="187" text-anchor="middle" font-size="9" fill="#92400e">BU prod AWS account</text>
+  <text x="794" y="212" text-anchor="middle" font-size="9" font-style="italic" fill="#16a34a">GitOps-managed from orchestrator</text>
+
+  <!-- Step numbers -->
+  <circle cx="94" cy="238" r="10" fill="#1d4ed8"/>
+  <text x="94" y="242" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">1</text>
+  <circle cx="266" cy="238" r="10" fill="#7c3aed"/>
+  <text x="266" y="242" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">2</text>
+  <circle cx="438" cy="238" r="10" fill="#047857"/>
+  <text x="438" y="242" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">3</text>
+  <circle cx="610" cy="238" r="10" fill="#b45309"/>
+  <text x="610" y="242" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">4</text>
+  <circle cx="794" cy="238" r="10" fill="#15803d"/>
+  <text x="794" y="242" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">5</text>
+
+  <!-- Step labels -->
+  <text x="94" y="263" text-anchor="middle" font-size="9" fill="#475569">Request</text>
+  <text x="266" y="263" text-anchor="middle" font-size="9" fill="#475569">CRD created</text>
+  <text x="438" y="263" text-anchor="middle" font-size="9" fill="#475569">Infra provisioned</text>
+  <text x="610" y="263" text-anchor="middle" font-size="9" fill="#475569">Add-ons deployed</text>
+  <text x="794" y="263" text-anchor="middle" font-size="9" fill="#475569">Cluster ready</text>
+</svg>

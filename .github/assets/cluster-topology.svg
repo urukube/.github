@@ -1,0 +1,151 @@
+<svg viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif" font-size="12">
+  <title>Cluster Topology — Orchestrator and BU Workload Clusters</title>
+  <desc>Single orchestrator cluster (PROD + DR) owned by the platform team, provisioning and managing separate dev and prod clusters for each Business Unit.</desc>
+  <defs>
+    <marker id="arr" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L7,3 z" fill="#6366f1"/>
+    </marker>
+    <marker id="arr-dr" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L7,3 z" fill="#818cf8"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="400" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="450" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="#111827">Cluster Topology</text>
+  <text x="450" y="44" text-anchor="middle" font-size="11" fill="#6b7280">One orchestrator cluster (platform cost) provisions and manages all BU workload clusters (BU cost)</text>
+
+  <!-- ══ ORCHESTRATOR ══ -->
+  <rect x="20" y="58" width="230" height="310" rx="10" fill="#eef2ff" stroke="#6366f1" stroke-width="2"/>
+  <text x="135" y="78" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3" letter-spacing="0.5">ORCHESTRATOR CLUSTER</text>
+  <text x="135" y="93" text-anchor="middle" font-size="10" fill="#6366f1">Platform team owns · central cost</text>
+
+  <!-- PROD box -->
+  <rect x="36" y="104" width="198" height="110" rx="7" fill="#4f46e5" stroke="#3730a3" stroke-width="1.5"/>
+  <text x="135" y="124" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">PROD</text>
+  <rect x="48" y="132" width="174" height="18" rx="3" fill="rgba(255,255,255,0.15)"/>
+  <text x="135" y="145" text-anchor="middle" font-size="10" fill="#e0e7ff">Crossplane — reconciles CRDs → infra</text>
+  <rect x="48" y="154" width="174" height="18" rx="3" fill="rgba(255,255,255,0.15)"/>
+  <text x="135" y="167" text-anchor="middle" font-size="10" fill="#e0e7ff">ArgoCD — GitOps for all BU clusters</text>
+  <rect x="48" y="176" width="174" height="18" rx="3" fill="rgba(255,255,255,0.15)"/>
+  <text x="135" y="189" text-anchor="middle" font-size="10" fill="#e0e7ff">Backstage — self-service portal</text>
+
+  <!-- DR box -->
+  <rect x="36" y="228" width="198" height="68" rx="7" fill="#818cf8" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="135" y="248" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">DR — active standby</text>
+  <text x="135" y="264" text-anchor="middle" font-size="10" fill="#e0e7ff">second AWS region</text>
+  <text x="135" y="278" text-anchor="middle" font-size="10" fill="#e0e7ff">RTO &lt; 15 min · RPO &lt; 5 min</text>
+
+  <!-- failover arrow -->
+  <path d="M135,214 L135,226" stroke="#818cf8" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-dr)"/>
+  <text x="160" y="223" font-size="9" fill="#818cf8">failover</text>
+
+  <!-- cost badge -->
+  <rect x="50" y="312" width="170" height="22" rx="4" fill="#312e81"/>
+  <text x="135" y="327" text-anchor="middle" font-size="10" font-weight="600" fill="#c7d2fe">Flat platform cost — does not scale with BUs</text>
+
+  <!-- ══ BU CLUSTERS ══ -->
+  <rect x="272" y="58" width="608" height="310" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="576" y="78" text-anchor="middle" font-size="11" font-weight="700" fill="#334155" letter-spacing="0.5">BU WORKLOAD CLUSTERS</text>
+  <text x="576" y="93" text-anchor="middle" font-size="10" fill="#64748b">each BU gets isolated dev + prod clusters in their own AWS accounts</text>
+
+  <!-- BU-A -->
+  <rect x="288" y="104" width="176" height="230" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="1.5"/>
+  <rect x="288" y="104" width="176" height="28" rx="8" fill="#0d9488"/>
+  <text x="376" y="122" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">BU-A</text>
+  <text x="376" y="135" text-anchor="middle" font-size="0" fill="#ffffff">x</text>
+
+  <rect x="300" y="142" width="152" height="82" rx="6" fill="#ccfbf1" stroke="#0d9488" stroke-width="1"/>
+  <text x="376" y="159" text-anchor="middle" font-size="10" font-weight="700" fill="#065f46">dev cluster</text>
+  <text x="376" y="173" text-anchor="middle" font-size="9" fill="#047857">own AWS dev account</text>
+  <rect x="308" y="180" width="66" height="16" rx="3" fill="#d1fae5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="341" y="192" text-anchor="middle" font-size="8" fill="#065f46">VPC + EKS</text>
+  <rect x="380" y="180" width="66" height="16" rx="3" fill="#d1fae5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="413" y="192" text-anchor="middle" font-size="8" fill="#065f46">addons</text>
+  <text x="376" y="217" text-anchor="middle" font-size="8" fill="#047857">ArgoCD agent · ESO · Cilium</text>
+
+  <rect x="300" y="234" width="152" height="82" rx="6" fill="#fef9c3" stroke="#d97706" stroke-width="1"/>
+  <text x="376" y="251" text-anchor="middle" font-size="10" font-weight="700" fill="#713f12">prod cluster</text>
+  <text x="376" y="265" text-anchor="middle" font-size="9" fill="#92400e">own AWS prod account</text>
+  <rect x="308" y="272" width="66" height="16" rx="3" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+  <text x="341" y="284" text-anchor="middle" font-size="8" fill="#713f12">VPC + EKS</text>
+  <rect x="380" y="272" width="66" height="16" rx="3" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+  <text x="413" y="284" text-anchor="middle" font-size="8" fill="#713f12">addons</text>
+  <text x="376" y="309" text-anchor="middle" font-size="8" fill="#92400e">ArgoCD agent · ESO · Cilium</text>
+
+  <rect x="300" y="323" width="152" height="18" rx="4" fill="#134e4a"/>
+  <text x="376" y="336" text-anchor="middle" font-size="9" font-weight="600" fill="#ccfbf1">BU-A cost center</text>
+
+  <!-- BU-B -->
+  <rect x="480" y="104" width="176" height="230" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="1.5"/>
+  <rect x="480" y="104" width="176" height="28" rx="8" fill="#0d9488"/>
+  <text x="568" y="122" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">BU-B</text>
+
+  <rect x="492" y="142" width="152" height="82" rx="6" fill="#ccfbf1" stroke="#0d9488" stroke-width="1"/>
+  <text x="568" y="159" text-anchor="middle" font-size="10" font-weight="700" fill="#065f46">dev cluster</text>
+  <text x="568" y="173" text-anchor="middle" font-size="9" fill="#047857">own AWS dev account</text>
+  <rect x="500" y="180" width="66" height="16" rx="3" fill="#d1fae5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="533" y="192" text-anchor="middle" font-size="8" fill="#065f46">VPC + EKS</text>
+  <rect x="572" y="180" width="66" height="16" rx="3" fill="#d1fae5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="605" y="192" text-anchor="middle" font-size="8" fill="#065f46">addons</text>
+  <text x="568" y="217" text-anchor="middle" font-size="8" fill="#047857">ArgoCD agent · ESO · Cilium</text>
+
+  <rect x="492" y="234" width="152" height="82" rx="6" fill="#fef9c3" stroke="#d97706" stroke-width="1"/>
+  <text x="568" y="251" text-anchor="middle" font-size="10" font-weight="700" fill="#713f12">prod cluster</text>
+  <text x="568" y="265" text-anchor="middle" font-size="9" fill="#92400e">own AWS prod account</text>
+  <rect x="500" y="272" width="66" height="16" rx="3" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+  <text x="533" y="284" text-anchor="middle" font-size="8" fill="#713f12">VPC + EKS</text>
+  <rect x="572" y="272" width="66" height="16" rx="3" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+  <text x="605" y="284" text-anchor="middle" font-size="8" fill="#713f12">addons</text>
+  <text x="568" y="309" text-anchor="middle" font-size="8" fill="#92400e">ArgoCD agent · ESO · Cilium</text>
+
+  <rect x="492" y="323" width="152" height="18" rx="4" fill="#134e4a"/>
+  <text x="568" y="336" text-anchor="middle" font-size="9" font-weight="600" fill="#ccfbf1">BU-B cost center</text>
+
+  <!-- BU-C -->
+  <rect x="672" y="104" width="176" height="230" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <rect x="672" y="104" width="176" height="28" rx="8" fill="#94a3b8"/>
+  <text x="760" y="122" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">BU-C  (next)</text>
+
+  <rect x="684" y="142" width="152" height="82" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="760" y="175" text-anchor="middle" font-size="10" fill="#94a3b8">dev cluster</text>
+  <text x="760" y="191" text-anchor="middle" font-size="9" fill="#94a3b8">provisioned on demand</text>
+
+  <rect x="684" y="234" width="152" height="82" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="760" y="267" text-anchor="middle" font-size="10" fill="#94a3b8">prod cluster</text>
+  <text x="760" y="283" text-anchor="middle" font-size="9" fill="#94a3b8">provisioned on demand</text>
+
+  <rect x="684" y="323" width="152" height="18" rx="4" fill="#e2e8f0"/>
+  <text x="760" y="336" text-anchor="middle" font-size="9" font-weight="600" fill="#64748b">BU-C cost center</text>
+
+  <!-- ── Crossplane arrows from PROD to clusters ── -->
+  <!-- to BU-A dev -->
+  <path d="M234,155 C258,155 272,175 288,185" stroke="#6366f1" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <!-- to BU-A prod -->
+  <path d="M234,175 C258,175 272,265 288,275" stroke="#6366f1" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <!-- to BU-B dev -->
+  <path d="M234,160 C258,160 440,185 480,185" stroke="#6366f1" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <!-- to BU-B prod -->
+  <path d="M234,180 C260,180 440,270 480,275" stroke="#6366f1" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <!-- to BU-C (dashed) -->
+  <path d="M234,170 C260,170 620,185 672,185" stroke="#94a3b8" stroke-width="1.5" fill="none" stroke-dasharray="5,3" marker-end="url(#arr-dr)"/>
+  <path d="M234,185 C260,185 620,265 672,270" stroke="#94a3b8" stroke-width="1.5" fill="none" stroke-dasharray="5,3" marker-end="url(#arr-dr)"/>
+
+  <!-- Arrow label -->
+  <text x="252" y="148" font-size="9" fill="#6366f1" font-weight="600">Crossplane</text>
+  <text x="252" y="160" font-size="9" fill="#6366f1">provisions</text>
+
+  <!-- Legend -->
+  <rect x="20" y="378" width="860" height="18" rx="4" fill="#f1f5f9"/>
+  <rect x="30" y="383" width="10" height="8" rx="1" fill="#4f46e5"/>
+  <text x="46" y="392" font-size="9" fill="#374151">Orchestrator (PROD)</text>
+  <rect x="160" y="383" width="10" height="8" rx="1" fill="#818cf8"/>
+  <text x="176" y="392" font-size="9" fill="#374151">Orchestrator (DR standby)</text>
+  <rect x="320" y="383" width="10" height="8" rx="1" fill="#ccfbf1" stroke="#0d9488" stroke-width="1"/>
+  <text x="336" y="392" font-size="9" fill="#374151">BU dev cluster</text>
+  <rect x="430" y="383" width="10" height="8" rx="1" fill="#fef9c3" stroke="#d97706" stroke-width="1"/>
+  <text x="446" y="392" font-size="9" fill="#374151">BU prod cluster</text>
+  <rect x="540" y="383" width="10" height="8" rx="1" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+  <text x="556" y="392" font-size="9" fill="#374151">future BU (not yet provisioned)</text>
+</svg>

@@ -4,51 +4,7 @@
 
 A single **Orchestrator Cluster** (platform team owns, PROD + DR) runs Crossplane, ArgoCD, and Backstage. It holds no BU workloads — its sole job is to provision and manage infrastructure for every customer on demand via Custom Resource Definitions (CRDs).
 
-```mermaid
-graph LR
-    subgraph ORCH["🎛️ ORCHESTRATOR CLUSTER  —  platform team owns"]
-        direction TB
-        ORCH_PROD["PROD\nCrossplane · ArgoCD · Backstage\nCustom Resource Definitions"]
-        ORCH_DR["DR\nactive standby"]
-        ORCH_PROD -.->|failover| ORCH_DR
-    end
-
-    subgraph WORKLOADS["BU WORKLOAD CLUSTERS"]
-        direction TB
-        subgraph BUA["BU-A  (own cost center)"]
-            direction TB
-            A_DEV["dev cluster"]
-            A_PROD["prod cluster"]
-        end
-        subgraph BUB["BU-B  (own cost center)"]
-            direction TB
-            B_DEV["dev cluster"]
-            B_PROD["prod cluster"]
-        end
-        subgraph BUC["BU-C  (onboards later)"]
-            direction TB
-            C_DEV["dev cluster"]
-            C_PROD["prod cluster"]
-        end
-    end
-
-    ORCH_PROD -->|Crossplane provisions| A_DEV
-    ORCH_PROD -->|Crossplane provisions| A_PROD
-    ORCH_PROD -->|Crossplane provisions| B_DEV
-    ORCH_PROD -->|Crossplane provisions| B_PROD
-    ORCH_PROD -->|Crossplane provisions| C_DEV
-    ORCH_PROD -->|Crossplane provisions| C_PROD
-
-    classDef orchProd    fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,font-weight:bold
-    classDef orchDR      fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
-    classDef devCluster  fill:#0D9488,stroke:#0F766E,color:#FFFFFF
-    classDef prodCluster fill:#D97706,stroke:#B45309,color:#FFFFFF
-
-    class ORCH_PROD orchProd
-    class ORCH_DR orchDR
-    class A_DEV,B_DEV,C_DEV devCluster
-    class A_PROD,B_PROD,C_PROD prodCluster
-```
+![Cluster Topology](assets/cluster-topology.svg)
 
 | What the platform runs | Clusters | Cost model |
 | ---------------------- | -------- | ---------- |
@@ -69,28 +25,32 @@ graph LR
 
 ## How a BU Gets an Environment
 
-```mermaid
-flowchart LR
-    DEV["👩‍💻 BU Engineer\n━━━━━━━━━━━━━━\n'I need a Kubernetes\nenvironment'"]
-
-    PORTAL["Backstage Portal\n━━━━━━━━━━━━━━\nHosted on Orchestrator\nname · size · region\ncost-center"]
-
-    CRD["Environment CRD\n━━━━━━━━━━━━━━\nApplied to Orchestrator\ncost-center tag\napproved region\nno public LBs"]
-
-    CROSSPLANE["Crossplane\n━━━━━━━━━━━━━━\nReconciles the CRD\nProvisions cloud infra\nVPC · cluster\nnode-pools · IAM"]
-
-    ARGOCD["ArgoCD\n━━━━━━━━━━━━━━\nDetects new cluster\nDeploys app-of-apps\ningress · cert-manager\nobservability · policy\nsecrets operator · apps"]
-
-    DEV --> PORTAL --> CRD --> CROSSPLANE --> ARGOCD
-
-    style DEV        fill:#1D4ED8,stroke:#1E3A8A,color:#FFFFFF,font-weight:bold
-    style PORTAL     fill:#7C3AED,stroke:#5B21B6,color:#FFFFFF
-    style CRD        fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    style CROSSPLANE fill:#0D9488,stroke:#0F766E,color:#FFFFFF
-    style ARGOCD     fill:#D97706,stroke:#B45309,color:#FFFFFF
-```
+![BU Provisioning Flow](assets/bu-provisioning-flow.svg)
 
 **Principle: "CRDs declare intent · Crossplane provisions infra · ArgoCD delivers everything else"**
+
+### What the BU Admin supplies
+
+| Input | Detail |
+| ----- | ------ |
+| AWS Account ID (dev) | Crossplane assumes a cross-account IAM role into this account to build the dev environment |
+| AWS Account ID (prod) | Crossplane assumes a cross-account IAM role into this account to build the prod environment |
+| Region | Where both clusters are provisioned |
+| Node sizing | Instance type + desired/min/max counts (defaults apply if omitted) |
+| Cost-center tag | Applied to all AWS resources for billing attribution |
+| Team contacts | Owner and on-call contacts registered in Backstage catalog |
+
+### What Crossplane builds (per account)
+
+| Resource | Detail |
+| -------- | ------ |
+| VPC | One isolated VPC per environment |
+| Subnets | 1 public subnet (NAT GW + LB ENIs) · 2 private subnets (EKS worker nodes) |
+| EKS Cluster | Self-managed node group · IMDSv2 enforced · EBS encryption enabled |
+| IRSA + OIDC | Per-workload IAM roles mapped to Kubernetes service accounts |
+| Bootstrap add-ons | ArgoCD agent · ESO · Cilium — installed at cluster creation time |
+
+Once provisioning completes, the ArgoCD agent on the BU cluster registers it with the orchestrator's ArgoCD. From that point forward ArgoCD manages the cluster remotely and deploys the full app-of-apps (ingress, cert-manager, observability agents, policy controllers).
 
 ---
 
@@ -102,37 +62,7 @@ flowchart LR
 
 ### Multi-Region Architecture
 
-The Orchestrator Cluster runs as an **active/standby pair across two separate cloud regions**. This ensures that a full regional failure (AZ outages, cloud provider incidents, network partitions) cannot take down the platform control plane.
-
-```mermaid
-graph LR
-    subgraph PRIMARY["🟢  PRIMARY REGION  (e.g. us-east-1)"]
-        direction TB
-        ORCH_PROD["ORCHESTRATOR — PROD\nCrossplane · ArgoCD · Backstage\nCRDs · Live traffic"]
-    end
-
-    subgraph DR_REGION["🟡  DR REGION  (e.g. us-west-2)"]
-        direction TB
-        ORCH_DR["ORCHESTRATOR — DR\nCrossplane · ArgoCD · Backstage\nWarm standby · No live traffic"]
-    end
-
-    subgraph BU_CLUSTERS["BU WORKLOAD CLUSTERS  (any region)"]
-        direction TB
-        BU1["BU-A  dev + prod"]
-        BU2["BU-B  dev + prod"]
-        BU3["BU-C  dev + prod"]
-    end
-
-    ORCH_PROD -->|manages| BU_CLUSTERS
-    ORCH_PROD -.->|continuous state sync| ORCH_DR
-    ORCH_DR -.->|ready to take over| BU_CLUSTERS
-
-    style ORCH_PROD  fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,font-weight:bold
-    style ORCH_DR    fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
-    style BU1        fill:#0D9488,stroke:#0F766E,color:#FFFFFF
-    style BU2        fill:#0D9488,stroke:#0F766E,color:#FFFFFF
-    style BU3        fill:#0D9488,stroke:#0F766E,color:#FFFFFF
-```
+![DR Multi-Region Architecture](assets/dr-architecture.svg)
 
 ---
 
@@ -166,43 +96,7 @@ All alerts route to the **Platform team on-call** via PagerDuty (or equivalent).
 
 ### Failover Procedure (Platform Team Runbook)
 
-```mermaid
-flowchart TD
-    ALERT["🚨 Alert fires\nPlatform on-call paged"]
-    ASSESS["Platform team assesses\nIs PROD recoverable quickly?"]
-    MINOR["Minor incident\nRestart pods / rollback\nNo failover needed"]
-    DECLARE["Declare DR event\nEscalate to Platform lead\nOpen incident channel"]
-    DNS["Update DNS / load balancer\nRoute traffic to DR region\nTarget: < 5 min"]
-    PROMOTE["Promote DR cluster\nScale up Crossplane + ArgoCD\nEnable Backstage write mode"]
-    VALIDATE["Platform team validates\nCrossplane reconciling\nArgoCD syncing from Git\nBackstage portal serving"]
-    NOTIFY["Notify BU teams\n'Platform in DR mode — existing workloads unaffected.\nNew provisioning available shortly.'"]
-    MONITOR["Monitor DR cluster\nContinue incident response\non PROD region"]
-    RESTORE["Restore PROD region\nReprovision Orchestrator\nSync state from DR"]
-    FAILBACK["Failback to PROD\nReverse DNS\nScale down DR"]
-
-    ALERT --> ASSESS
-    ASSESS -->|recoverable| MINOR
-    ASSESS -->|not recoverable / SLA breach| DECLARE
-    DECLARE --> DNS
-    DNS --> PROMOTE
-    PROMOTE --> VALIDATE
-    VALIDATE --> NOTIFY
-    NOTIFY --> MONITOR
-    MONITOR --> RESTORE
-    RESTORE --> FAILBACK
-
-    style ALERT    fill:#DC2626,stroke:#991B1B,color:#FFFFFF,font-weight:bold
-    style ASSESS   fill:#D97706,stroke:#B45309,color:#FFFFFF
-    style MINOR    fill:#0D9488,stroke:#0F766E,color:#FFFFFF
-    style DECLARE  fill:#DC2626,stroke:#991B1B,color:#FFFFFF
-    style DNS      fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    style PROMOTE  fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    style VALIDATE fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    style NOTIFY   fill:#7C3AED,stroke:#5B21B6,color:#FFFFFF
-    style MONITOR  fill:#D97706,stroke:#B45309,color:#FFFFFF
-    style RESTORE  fill:#0D9488,stroke:#0F766E,color:#FFFFFF
-    style FAILBACK fill:#0D9488,stroke:#0F766E,color:#FFFFFF
-```
+![Failover Runbook](assets/failover-runbook.svg)
 
 ---
 
