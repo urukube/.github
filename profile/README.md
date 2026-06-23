@@ -66,6 +66,14 @@ Once a BU's clusters are provisioned, their developers work entirely through Git
 
 ---
 
+## Secret Management
+
+![ESO Secret Provisioning and Sync Flow](https://raw.githubusercontent.com/urukube/.github/master/.github/assets/secret-management-flow.svg)
+
+> Full provisioning and sync flow, IRSA chain, ExternalSecret mappings, and how to add new secrets: [SECRET-MANAGEMENT.md](https://github.com/urukube/.github/blob/master/.github/SECRET-MANAGEMENT.md)
+
+---
+
 ## Repository Architecture
 
 ![urukube Repository Calling Graph](https://raw.githubusercontent.com/urukube/.github/master/.github/assets/repo-calling-diagram.svg)
