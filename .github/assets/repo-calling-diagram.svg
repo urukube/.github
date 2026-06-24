@@ -1,6 +1,6 @@
-<svg viewBox="0 0 1200 740" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif" font-size="12">
+<svg viewBox="0 0 1400 700" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif" font-size="12">
   <title>urukube — Repository Calling Diagram</title>
-  <desc>Nine urukube repos across four layers: orchestrator calls orchestrator-plane-setup via workflow_call; orchestrator-plane-setup runs four sequential Terraform stages each calling a leaf module; release-workflow is shared by every repo.</desc>
+  <desc>Eleven urukube repos across four layers: orchestrator calls orchestrator-plane-setup via workflow_call; orchestrator-plane-setup runs six sequential Terraform stages each calling a leaf module; release-workflow is shared by every repo.</desc>
 
   <defs>
     <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
@@ -10,7 +10,7 @@
       <path d="M0,0 L0,6 L8,3 z" fill="#7c3aed"/>
     </marker>
     <marker id="arr-teal" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="#0d9488"/>
+      <path d="M0,0 L0,6 L8,3 z" fill="#0f766e"/>
     </marker>
     <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
       <path d="M0,0 L0,6 L8,3 z" fill="#16a34a"/>
@@ -21,227 +21,296 @@
     <marker id="arr-amber" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
       <path d="M0,0 L0,6 L8,3 z" fill="#b45309"/>
     </marker>
+    <marker id="arr-indigo" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#4338ca"/>
+    </marker>
+    <marker id="arr-rose" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#e11d48"/>
+    </marker>
   </defs>
 
-  <rect width="1200" height="740" fill="#ffffff"/>
+  <rect width="1400" height="700" fill="#ffffff"/>
 
   <!-- ══ TITLE ══ -->
-  <text x="590" y="26" text-anchor="middle" font-size="16" font-weight="700" fill="#111827">urukube — Repository Calling Graph</text>
-  <text x="590" y="44" text-anchor="middle" font-size="11" fill="#6b7280">Nine repos · four sequential Terraform stages · one shared release workflow</text>
+  <text x="651" y="26" text-anchor="middle" font-size="16" font-weight="700" fill="#111827">urukube — Repository Calling Graph</text>
+  <text x="651" y="44" text-anchor="middle" font-size="11" fill="#6b7280">Eleven repos · six sequential Terraform stages · one shared release workflow</text>
 
-  <!-- ══ ORCHESTRATOR (entry-point repo) ══ -->
-  <rect x="360" y="56" width="380" height="72" rx="10" fill="#4f46e5" stroke="#3730a3" stroke-width="2"/>
-  <text x="550" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">orchestrator</text>
-  <text x="550" y="92" text-anchor="middle" font-size="10" fill="#c7d2fe">calling repo — no Terraform code · only .tfvars + workflow triggers</text>
-  <text x="550" y="107" text-anchor="middle" font-size="9" fill="#a5b4fc">ci.yml (workflow_dispatch → provision)  ·  destroy.yml (workflow_dispatch + typed confirm)</text>
-  <text x="550" y="120" text-anchor="middle" font-size="9" fill="#a5b4fc">S3 state bucket: urukube-orchestrator-tfstate  ·  tfvars: orchestrator.tfvars</text>
+  <!-- ══ ORCHESTRATOR ══ -->
+  <rect x="461" y="56" width="380" height="72" rx="10" fill="#4f46e5" stroke="#3730a3" stroke-width="2"/>
+  <text x="651" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">orchestrator</text>
+  <text x="651" y="92" text-anchor="middle" font-size="10" fill="#c7d2fe">calling repo — no Terraform code · only .tfvars + workflow triggers</text>
+  <text x="651" y="107" text-anchor="middle" font-size="9" fill="#a5b4fc">ci.yml (workflow_dispatch → provision)  ·  destroy.yml (workflow_dispatch + typed confirm)</text>
+  <text x="651" y="120" text-anchor="middle" font-size="9" fill="#a5b4fc">S3 state bucket: urukube-orchestrator-tfstate  ·  tfvars: orchestrator.tfvars</text>
 
   <!-- arrow orchestrator → orchestrator-plane-setup -->
-  <line x1="550" y1="128" x2="550" y2="152" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-purple)"/>
-  <text x="566" y="145" font-size="9" fill="#7c3aed" font-weight="600">workflow_call @v1</text>
+  <line x1="651" y1="128" x2="651" y2="152" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-purple)"/>
+  <text x="667" y="145" font-size="9" fill="#7c3aed" font-weight="600">workflow_call @v1</text>
 
-  <!-- ══ ORCHESTRATOR-PLANE-SETUP ══ -->
-  <rect x="16" y="154" width="1062" height="257" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="2"/>
-  <rect x="16" y="154" width="1062" height="28" rx="10" fill="#7c3aed"/>
-  <text x="547" y="173" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">orchestrator-plane-setup  (reusable workflow — main.yml + destroy.yml)</text>
-  <text x="547" y="187" text-anchor="middle" font-size="9" fill="#6d28d9">Checked out at runtime · runs 4 sequential Terraform plan-approve-apply stages · reads tfvars + S3 bucket from caller inputs</text>
+  <!-- ══ ORCHESTRATOR-PLANE-SETUP container ══ -->
+  <rect x="16" y="154" width="1270" height="268" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="2"/>
+  <rect x="16" y="154" width="1270" height="28" rx="10" fill="#7c3aed"/>
+  <text x="651" y="173" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">orchestrator-plane-setup  (reusable workflow — main.yml + destroy.yml)</text>
+  <text x="651" y="187" text-anchor="middle" font-size="9" fill="#6d28d9">Checked out at runtime · runs 6 sequential Terraform plan-approve-apply stages · reads tfvars + S3 bucket from caller inputs</text>
 
-  <!-- ─── STAGE 1: eks-infra ─── -->
-  <rect x="26" y="195" width="248" height="204" rx="7" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
-  <rect x="26" y="195" width="248" height="22" rx="7" fill="#5b21b6"/>
-  <text x="150" y="211" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">① eks-infra</text>
-  <text x="150" y="232" text-anchor="middle" font-size="9" fill="#4c1d95">Provisions VPC + EKS cluster</text>
-  <text x="150" y="247" text-anchor="middle" font-size="9" fill="#5b21b6">networking-setup.tf  +  eks-infra-setup.tf</text>
-  <text x="150" y="264" text-anchor="middle" font-size="8" font-style="italic" fill="#6d28d9">Calls two TF modules:</text>
-  <text x="150" y="278" text-anchor="middle" font-size="9" font-weight="600" fill="#4c1d95">terraform-module-networking @v1.1.2</text>
-  <text x="150" y="292" text-anchor="middle" font-size="9" font-weight="600" fill="#4c1d95">terraform-module-eks @v1.2.0</text>
-  <text x="150" y="310" text-anchor="middle" font-size="8" fill="#7c3aed">Outputs → S3 remote state</text>
-  <text x="150" y="323" text-anchor="middle" font-size="8" fill="#6d28d9">cluster_endpoint · oidc_arn</text>
-  <text x="150" y="336" text-anchor="middle" font-size="8" fill="#6d28d9">vpc_id · cert_authority_data</text>
-  <text x="150" y="352" text-anchor="middle" font-size="8" fill="#5b21b6">S3 key: {env}/eks-infra</text>
-  <text x="150" y="367" text-anchor="middle" font-size="8" fill="#5b21b6">approver gate before apply</text>
-  <text x="150" y="382" text-anchor="middle" font-size="8" fill="#5b21b6">destroy order: last</text>
+  <!-- ─── STAGE 1: orchestrator-secret-management ─── -->
+  <rect x="26" y="195" width="198" height="216" rx="7" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5"/>
+  <rect x="26" y="195" width="198" height="22" rx="7" fill="#0f766e"/>
+  <text x="125" y="211" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">① orchestrator-secret-mgmt</text>
+  <text x="125" y="232" text-anchor="middle" font-size="9" fill="#134e4a">Provisions platform secrets</text>
+  <text x="125" y="246" text-anchor="middle" font-size="9" fill="#0f766e">orchestrator-secret-mgmt-setup.tf</text>
+  <text x="125" y="263" text-anchor="middle" font-size="8" font-style="italic" fill="#0d9488">AWS-only · no remote state dep</text>
+  <text x="125" y="277" text-anchor="middle" font-size="8" font-style="italic" fill="#0d9488">Calls one TF module:</text>
+  <text x="125" y="291" text-anchor="middle" font-size="9" font-weight="600" fill="#134e4a">orchestrator-secret-management</text>
+  <text x="125" y="305" text-anchor="middle" font-size="9" font-weight="600" fill="#134e4a">@v1.2.1</text>
+  <text x="125" y="322" text-anchor="middle" font-size="8" fill="#134e4a">platform/argocd/admin-password</text>
+  <text x="125" y="336" text-anchor="middle" font-size="8" fill="#134e4a">platform/github/github-token</text>
+  <text x="125" y="350" text-anchor="middle" font-size="8" fill="#0f766e">Values via TF_VAR_secret_values</text>
+  <text x="125" y="364" text-anchor="middle" font-size="8" fill="#0f766e">scoped to step env: (no leak)</text>
+  <text x="125" y="380" text-anchor="middle" font-size="8" fill="#0f766e">S3 key: {env}/orchestrator-secret-mgmt</text>
+  <text x="125" y="395" text-anchor="middle" font-size="8" fill="#0f766e">destroy order: last</text>
 
-  <!-- S3 arrow 1→2 -->
-  <line x1="274" y1="284" x2="285" y2="284" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-slate)"/>
-  <text x="279" y="279" text-anchor="middle" font-size="7" fill="#64748b">S3</text>
+  <!-- (no S3 arrow between ① and ② — no dependency) -->
 
-  <!-- ─── STAGE 2: eks-essential-addons ─── -->
-  <rect x="286" y="195" width="248" height="204" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
-  <rect x="286" y="195" width="248" height="22" rx="7" fill="#059669"/>
-  <text x="410" y="211" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">② eks-essential-addons</text>
-  <text x="410" y="232" text-anchor="middle" font-size="9" fill="#064e3b">Installs cluster-critical add-ons</text>
-  <text x="410" y="247" text-anchor="middle" font-size="9" fill="#065f46">eks-essential-addons-setup.tf</text>
-  <text x="410" y="264" text-anchor="middle" font-size="8" font-style="italic" fill="#059669">Reads eks-infra S3 state</text>
-  <text x="410" y="278" text-anchor="middle" font-size="8" font-style="italic" fill="#059669">Calls one TF module:</text>
-  <text x="410" y="292" text-anchor="middle" font-size="9" font-weight="600" fill="#064e3b">terraform-module-essential-addons</text>
-  <text x="410" y="306" text-anchor="middle" font-size="9" font-weight="600" fill="#064e3b">@v1.0.1</text>
-  <text x="410" y="322" text-anchor="middle" font-size="8" fill="#065f46">CoreDNS · VPC CNI · EBS CSI</text>
-  <text x="410" y="336" text-anchor="middle" font-size="8" fill="#065f46">LB Controller · Autoscaler</text>
-  <text x="410" y="350" text-anchor="middle" font-size="8" fill="#065f46">Metrics Server · Pod Identity</text>
-  <text x="410" y="367" text-anchor="middle" font-size="8" fill="#059669">S3 key: {env}/eks-essential-addons</text>
-  <text x="410" y="382" text-anchor="middle" font-size="8" fill="#059669">destroy order: 3rd</text>
+  <!-- ─── STAGE 2: eks-infra ─── -->
+  <rect x="236" y="195" width="198" height="216" rx="7" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <rect x="236" y="195" width="198" height="22" rx="7" fill="#5b21b6"/>
+  <text x="335" y="211" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">② eks-infra</text>
+  <text x="335" y="232" text-anchor="middle" font-size="9" fill="#4c1d95">Provisions VPC + EKS cluster</text>
+  <text x="335" y="246" text-anchor="middle" font-size="9" fill="#5b21b6">networking-setup.tf + eks-infra-setup.tf</text>
+  <text x="335" y="263" text-anchor="middle" font-size="8" font-style="italic" fill="#6d28d9">Calls two TF modules:</text>
+  <text x="335" y="277" text-anchor="middle" font-size="9" font-weight="600" fill="#4c1d95">terraform-module-networking @v1.1.2</text>
+  <text x="335" y="291" text-anchor="middle" font-size="9" font-weight="600" fill="#4c1d95">terraform-module-eks @v1.2.0</text>
+  <text x="335" y="308" text-anchor="middle" font-size="8" fill="#7c3aed">Outputs → S3 remote state</text>
+  <text x="335" y="322" text-anchor="middle" font-size="8" fill="#6d28d9">cluster_endpoint · oidc_arn</text>
+  <text x="335" y="336" text-anchor="middle" font-size="8" fill="#6d28d9">vpc_id · cert_authority_data</text>
+  <text x="335" y="350" text-anchor="middle" font-size="8" fill="#5b21b6">K8s 1.36 · AL2023 nodeadm</text>
+  <text x="335" y="364" text-anchor="middle" font-size="8" fill="#5b21b6">IMDSv2 · Istio port 15017</text>
+  <text x="335" y="380" text-anchor="middle" font-size="8" fill="#5b21b6">S3 key: {env}/eks-infra</text>
+  <text x="335" y="395" text-anchor="middle" font-size="8" fill="#5b21b6">destroy order: last infra</text>
 
-  <!-- S3 arrow 2→3 -->
-  <line x1="534" y1="284" x2="545" y2="284" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-slate)"/>
-  <text x="539" y="279" text-anchor="middle" font-size="7" fill="#64748b">S3</text>
+  <!-- S3 arrow ②→③ -->
+  <line x1="434" y1="298" x2="444" y2="298" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-slate)"/>
+  <text x="439" y="293" text-anchor="middle" font-size="7" fill="#64748b">S3</text>
 
-  <!-- ─── STAGE 3: orchestrator-custom-addons ─── -->
-  <rect x="546" y="195" width="248" height="204" rx="7" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/>
-  <rect x="546" y="195" width="248" height="22" rx="7" fill="#b45309"/>
-  <text x="670" y="211" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">③ orchestrator-custom-addons</text>
-  <text x="670" y="232" text-anchor="middle" font-size="9" fill="#431607">Installs orchestrator platform tools</text>
-  <text x="670" y="247" text-anchor="middle" font-size="9" fill="#78350f">orchestrator-custom-addons-setup.tf</text>
-  <text x="670" y="264" text-anchor="middle" font-size="8" font-style="italic" fill="#d97706">Reads eks-infra S3 state</text>
-  <text x="670" y="278" text-anchor="middle" font-size="8" font-style="italic" fill="#d97706">Calls one TF module:</text>
-  <text x="670" y="292" text-anchor="middle" font-size="9" font-weight="600" fill="#431607">orchestrator-custom-addons @v1.1.12</text>
-  <text x="670" y="308" text-anchor="middle" font-size="8" fill="#92400e">Istio · ArgoCD · Crossplane · ESO</text>
-  <text x="670" y="322" text-anchor="middle" font-size="8" fill="#92400e">Prometheus · Kiali · ECR pull role</text>
-  <text x="670" y="338" text-anchor="middle" font-size="8" fill="#92400e">ArgoCD Image Updater</text>
-  <text x="670" y="352" text-anchor="middle" font-size="8" fill="#92400e">ECR token refresh CronJob</text>
-  <text x="670" y="367" text-anchor="middle" font-size="8" fill="#d97706">S3 key: {env}/orchestrator-custom-addons</text>
-  <text x="670" y="382" text-anchor="middle" font-size="8" fill="#d97706">destroy order: 2nd</text>
+  <!-- ─── STAGE 3: eks-essential-addons ─── -->
+  <rect x="446" y="195" width="198" height="216" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <rect x="446" y="195" width="198" height="22" rx="7" fill="#059669"/>
+  <text x="545" y="211" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">③ eks-essential-addons</text>
+  <text x="545" y="232" text-anchor="middle" font-size="9" fill="#064e3b">Installs cluster-critical add-ons</text>
+  <text x="545" y="246" text-anchor="middle" font-size="9" fill="#065f46">eks-essential-addons-setup.tf</text>
+  <text x="545" y="263" text-anchor="middle" font-size="8" font-style="italic" fill="#059669">Reads eks-infra S3 state</text>
+  <text x="545" y="277" text-anchor="middle" font-size="8" font-style="italic" fill="#059669">Calls one TF module:</text>
+  <text x="545" y="291" text-anchor="middle" font-size="9" font-weight="600" fill="#064e3b">terraform-module-essential-addons</text>
+  <text x="545" y="305" text-anchor="middle" font-size="9" font-weight="600" fill="#064e3b">@v1.0.1</text>
+  <text x="545" y="322" text-anchor="middle" font-size="8" fill="#065f46">CoreDNS · VPC CNI · EBS CSI</text>
+  <text x="545" y="336" text-anchor="middle" font-size="8" fill="#065f46">LB Controller · Autoscaler</text>
+  <text x="545" y="350" text-anchor="middle" font-size="8" fill="#065f46">Metrics Server · Pod Identity</text>
+  <text x="545" y="364" text-anchor="middle" font-size="8" fill="#059669">S3 key: {env}/eks-essential-addons</text>
+  <text x="545" y="380" text-anchor="middle" font-size="8" fill="#059669">destroy order: 4th</text>
+  <text x="545" y="395" text-anchor="middle" font-size="8" fill="#059669"> </text>
 
-  <!-- S3 arrow 3→4 -->
-  <line x1="794" y1="284" x2="805" y2="284" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-slate)"/>
-  <text x="799" y="279" text-anchor="middle" font-size="7" fill="#64748b">S3</text>
+  <!-- S3 arrow ③→④ -->
+  <line x1="644" y1="298" x2="654" y2="298" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-slate)"/>
+  <text x="649" y="293" text-anchor="middle" font-size="7" fill="#64748b">S3</text>
 
-  <!-- ─── STAGE 4: argocd-configuration ─── -->
-  <rect x="806" y="195" width="260" height="204" rx="7" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
-  <rect x="806" y="195" width="260" height="22" rx="7" fill="#be123c"/>
-  <text x="936" y="211" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">④ argocd-configuration</text>
-  <text x="936" y="232" text-anchor="middle" font-size="9" fill="#881337">Creates ArgoCD ApplicationSets</text>
-  <text x="936" y="247" text-anchor="middle" font-size="9" fill="#9f1239">argocd-configuration-setup.tf</text>
-  <text x="936" y="264" text-anchor="middle" font-size="8" font-style="italic" fill="#e11d48">Reads eks-infra S3 state</text>
-  <text x="936" y="278" text-anchor="middle" font-size="8" font-style="italic" fill="#e11d48">Calls one TF module:</text>
-  <text x="936" y="292" text-anchor="middle" font-size="9" font-weight="600" fill="#881337">argocd-configuration @v1.0.0</text>
-  <text x="936" y="308" text-anchor="middle" font-size="8" fill="#9f1239">ApplicationSet: platform-custom-xrds</text>
-  <text x="936" y="322" text-anchor="middle" font-size="8" fill="#9f1239">SCM Provider → scans GitHub org</text>
-  <text x="936" y="336" text-anchor="middle" font-size="8" fill="#9f1239">for repos tagged platform-custom-xrds</text>
-  <text x="936" y="350" text-anchor="middle" font-size="8" fill="#9f1239">1 ArgoCD App per repo → syncs</text>
-  <text x="936" y="364" text-anchor="middle" font-size="8" fill="#9f1239">XRDs/Compositions → crossplane-system</text>
-  <text x="936" y="379" text-anchor="middle" font-size="8" fill="#e11d48">S3 key: {env}/argocd-configuration</text>
-  <text x="936" y="394" text-anchor="middle" font-size="8" fill="#e11d48">destroy order: 1st (reverse)</text>
+  <!-- ─── STAGE 4: orchestrator-custom-addons ─── -->
+  <rect x="656" y="195" width="198" height="216" rx="7" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/>
+  <rect x="656" y="195" width="198" height="22" rx="7" fill="#b45309"/>
+  <text x="755" y="211" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">④ orchestrator-custom-addons</text>
+  <text x="755" y="232" text-anchor="middle" font-size="9" fill="#431607">Installs orchestrator platform tools</text>
+  <text x="755" y="246" text-anchor="middle" font-size="9" fill="#78350f">orchestrator-custom-addons-setup.tf</text>
+  <text x="755" y="263" text-anchor="middle" font-size="8" font-style="italic" fill="#d97706">Reads eks-infra S3 state</text>
+  <text x="755" y="277" text-anchor="middle" font-size="8" font-style="italic" fill="#d97706">Calls one TF module:</text>
+  <text x="755" y="291" text-anchor="middle" font-size="9" font-weight="600" fill="#431607">orchestrator-custom-addons @v1.3.1</text>
+  <text x="755" y="307" text-anchor="middle" font-size="8" fill="#92400e">Istio · ArgoCD · Crossplane</text>
+  <text x="755" y="321" text-anchor="middle" font-size="8" fill="#92400e">ESO Helm · Prometheus · Kiali</text>
+  <text x="755" y="335" text-anchor="middle" font-size="8" fill="#92400e">ECR pull role · Image Updater</text>
+  <text x="755" y="349" text-anchor="middle" font-size="8" fill="#d97706">Registers ESO CRDs — must run</text>
+  <text x="755" y="363" text-anchor="middle" font-size="8" fill="#d97706">before ⑤ eso-configuration</text>
+  <text x="755" y="379" text-anchor="middle" font-size="8" fill="#d97706">S3 key: {env}/orchestrator-custom-addons</text>
+  <text x="755" y="395" text-anchor="middle" font-size="8" fill="#d97706">destroy order: 3rd</text>
 
-  <!-- ══ LEAF TF MODULE REPOS (bottom row) ══ -->
+  <!-- S3 arrow ④→⑤ -->
+  <line x1="854" y1="298" x2="864" y2="298" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-slate)"/>
+  <text x="859" y="293" text-anchor="middle" font-size="7" fill="#64748b">S3</text>
 
-  <!-- terraform-module-networking -->
-  <rect x="16" y="436" width="182" height="82" rx="7" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
-  <rect x="16" y="436" width="182" height="22" rx="7" fill="#15803d"/>
-  <text x="107" y="453" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">terraform-module-networking</text>
-  <text x="107" y="470" text-anchor="middle" font-size="8" fill="#14532d">AWS VPC · 3-tier subnets</text>
-  <text x="107" y="483" text-anchor="middle" font-size="8" fill="#14532d">NAT GW · VPC endpoints · SGs</text>
-  <text x="107" y="496" text-anchor="middle" font-size="8" fill="#16a34a">ref: v1.1.2  ·  11 tests</text>
-  <text x="107" y="510" text-anchor="middle" font-size="8" fill="#15803d">github.com/urukube/…</text>
+  <!-- ─── STAGE 5: eso-configuration ─── -->
+  <rect x="866" y="195" width="198" height="216" rx="7" fill="#eef2ff" stroke="#4338ca" stroke-width="1.5"/>
+  <rect x="866" y="195" width="198" height="22" rx="7" fill="#4338ca"/>
+  <text x="965" y="211" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">⑤ eso-configuration</text>
+  <text x="965" y="232" text-anchor="middle" font-size="9" fill="#312e81">Wires ESO to AWS Secrets Manager</text>
+  <text x="965" y="246" text-anchor="middle" font-size="9" fill="#3730a3">eso-configuration-setup.tf</text>
+  <text x="965" y="263" text-anchor="middle" font-size="8" font-style="italic" fill="#4338ca">Reads eks-infra S3 state</text>
+  <text x="965" y="277" text-anchor="middle" font-size="8" font-style="italic" fill="#4338ca">Must run AFTER ④ (ESO CRDs needed)</text>
+  <text x="965" y="291" text-anchor="middle" font-size="8" font-style="italic" fill="#4338ca">Calls one TF module:</text>
+  <text x="965" y="305" text-anchor="middle" font-size="9" font-weight="600" fill="#312e81">orchestrator-eso-config @v1.0.1</text>
+  <text x="965" y="321" text-anchor="middle" font-size="8" fill="#312e81">ClusterSecretStore: aws-secrets-manager</text>
+  <text x="965" y="335" text-anchor="middle" font-size="8" fill="#312e81">ExternalSecret: argocd-github-token</text>
+  <text x="965" y="349" text-anchor="middle" font-size="8" fill="#312e81">ExternalSecret: argocd-admin-password</text>
+  <text x="965" y="363" text-anchor="middle" font-size="8" fill="#4338ca">ESO v1 API (external-secrets.io/v1)</text>
+  <text x="965" y="379" text-anchor="middle" font-size="8" fill="#4338ca">S3 key: {env}/eso-configuration</text>
+  <text x="965" y="395" text-anchor="middle" font-size="8" fill="#4338ca">destroy order: 2nd</text>
 
-  <!-- terraform-module-eks -->
-  <rect x="208" y="436" width="182" height="82" rx="7" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
-  <rect x="208" y="436" width="182" height="22" rx="7" fill="#15803d"/>
-  <text x="299" y="453" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">terraform-module-eks</text>
-  <text x="299" y="470" text-anchor="middle" font-size="8" fill="#14532d">EKS cluster · self-managed NG</text>
-  <text x="299" y="483" text-anchor="middle" font-size="8" fill="#14532d">launch template · IMDSv2</text>
-  <text x="299" y="496" text-anchor="middle" font-size="8" fill="#16a34a">ref: v1.2.0</text>
-  <text x="299" y="510" text-anchor="middle" font-size="8" fill="#15803d">github.com/urukube/…</text>
+  <!-- S3 arrow ⑤→⑥ -->
+  <line x1="1064" y1="298" x2="1074" y2="298" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-slate)"/>
+  <text x="1069" y="293" text-anchor="middle" font-size="7" fill="#64748b">S3</text>
 
-  <!-- terraform-module-essential-addons -->
-  <rect x="400" y="436" width="195" height="82" rx="7" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
-  <rect x="400" y="436" width="195" height="22" rx="7" fill="#15803d"/>
-  <text x="497" y="453" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">terraform-module-essential-addons</text>
-  <text x="497" y="470" text-anchor="middle" font-size="8" fill="#14532d">CoreDNS · VPC CNI · EBS CSI</text>
-  <text x="497" y="483" text-anchor="middle" font-size="8" fill="#14532d">LB Controller · Autoscaler</text>
-  <text x="497" y="496" text-anchor="middle" font-size="8" fill="#16a34a">ref: v1.0.1</text>
-  <text x="497" y="510" text-anchor="middle" font-size="8" fill="#15803d">github.com/urukube/…</text>
+  <!-- ─── STAGE 6: argocd-configuration ─── -->
+  <rect x="1076" y="195" width="202" height="216" rx="7" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+  <rect x="1076" y="195" width="202" height="22" rx="7" fill="#be123c"/>
+  <text x="1177" y="211" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">⑥ argocd-configuration</text>
+  <text x="1177" y="232" text-anchor="middle" font-size="9" fill="#881337">Creates ArgoCD ApplicationSets</text>
+  <text x="1177" y="246" text-anchor="middle" font-size="9" fill="#9f1239">argocd-configuration-setup.tf</text>
+  <text x="1177" y="263" text-anchor="middle" font-size="8" font-style="italic" fill="#e11d48">Reads eks-infra S3 state</text>
+  <text x="1177" y="277" text-anchor="middle" font-size="8" font-style="italic" fill="#e11d48">Calls one TF module:</text>
+  <text x="1177" y="291" text-anchor="middle" font-size="9" font-weight="600" fill="#881337">argocd-configuration @v1.2.0</text>
+  <text x="1177" y="307" text-anchor="middle" font-size="8" fill="#9f1239">ApplicationSet: platform-custom-xrds</text>
+  <text x="1177" y="321" text-anchor="middle" font-size="8" fill="#9f1239">SCM Provider → scans GitHub org</text>
+  <text x="1177" y="335" text-anchor="middle" font-size="8" fill="#9f1239">for repos tagged platform-custom-xrds</text>
+  <text x="1177" y="349" text-anchor="middle" font-size="8" fill="#9f1239">1 ArgoCD App per repo → syncs</text>
+  <text x="1177" y="363" text-anchor="middle" font-size="8" fill="#9f1239">XRDs/Compositions → crossplane-system</text>
+  <text x="1177" y="379" text-anchor="middle" font-size="8" fill="#e11d48">S3 key: {env}/argocd-configuration</text>
+  <text x="1177" y="395" text-anchor="middle" font-size="8" fill="#e11d48">destroy order: 1st (reverse)</text>
 
-  <!-- orchestrator-custom-addons -->
-  <rect x="605" y="436" width="195" height="82" rx="7" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
-  <rect x="605" y="436" width="195" height="22" rx="7" fill="#b45309"/>
-  <text x="702" y="453" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">orchestrator-custom-addons</text>
-  <text x="702" y="470" text-anchor="middle" font-size="8" fill="#431607">Istio · ArgoCD · Crossplane</text>
-  <text x="702" y="483" text-anchor="middle" font-size="8" fill="#431607">ESO · Prometheus · Kiali</text>
-  <text x="702" y="496" text-anchor="middle" font-size="8" fill="#d97706">ref: v1.1.12</text>
-  <text x="702" y="510" text-anchor="middle" font-size="8" fill="#b45309">github.com/urukube/…</text>
+  <!-- ══ LEAF TF MODULE REPOS ══ -->
 
-  <!-- argocd-configuration -->
-  <rect x="810" y="436" width="195" height="82" rx="7" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
-  <rect x="810" y="436" width="195" height="22" rx="7" fill="#be123c"/>
-  <text x="907" y="453" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">argocd-configuration</text>
-  <text x="907" y="470" text-anchor="middle" font-size="8" fill="#881337">ApplicationSet: platform-custom-xrds</text>
-  <text x="907" y="483" text-anchor="middle" font-size="8" fill="#881337">kubectl provider only</text>
-  <text x="907" y="496" text-anchor="middle" font-size="8" fill="#e11d48">ref: v1.0.0</text>
-  <text x="907" y="510" text-anchor="middle" font-size="8" fill="#be123c">github.com/urukube/…</text>
+  <!-- orchestrator-secret-management leaf -->
+  <rect x="16" y="447" width="171" height="82" rx="7" fill="#f0fdfa" stroke="#0f766e" stroke-width="2"/>
+  <rect x="16" y="447" width="171" height="22" rx="7" fill="#0f766e"/>
+  <text x="101" y="464" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">orchestrator-secret-management</text>
+  <text x="101" y="481" text-anchor="middle" font-size="8" fill="#134e4a">AWS Secrets Manager bulk</text>
+  <text x="101" y="494" text-anchor="middle" font-size="8" fill="#134e4a">secretlist map · ignore_changes</text>
+  <text x="101" y="507" text-anchor="middle" font-size="8" fill="#0f766e">ref: v1.2.1</text>
+  <text x="101" y="520" text-anchor="middle" font-size="8" fill="#0f766e">github.com/urukube/…</text>
 
-  <!-- arrows stage 1 → networking + eks -->
-  <line x1="107" y1="413" x2="107" y2="434" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-green)"/>
-  <line x1="150" y1="413" x2="299" y2="434" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <!-- terraform-module-networking leaf -->
+  <rect x="195" y="447" width="171" height="82" rx="7" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <rect x="195" y="447" width="171" height="22" rx="7" fill="#15803d"/>
+  <text x="280" y="464" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">terraform-module-networking</text>
+  <text x="280" y="481" text-anchor="middle" font-size="8" fill="#14532d">AWS VPC · 3-tier subnets</text>
+  <text x="280" y="494" text-anchor="middle" font-size="8" fill="#14532d">NAT GW · VPC endpoints · SGs</text>
+  <text x="280" y="507" text-anchor="middle" font-size="8" fill="#16a34a">ref: v1.1.2  ·  11 tests</text>
+  <text x="280" y="520" text-anchor="middle" font-size="8" fill="#15803d">github.com/urukube/…</text>
 
-  <!-- arrow stage 2 → essential-addons -->
-  <line x1="497" y1="413" x2="497" y2="434" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <!-- terraform-module-eks leaf -->
+  <rect x="374" y="447" width="171" height="82" rx="7" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <rect x="374" y="447" width="171" height="22" rx="7" fill="#15803d"/>
+  <text x="459" y="464" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">terraform-module-eks</text>
+  <text x="459" y="481" text-anchor="middle" font-size="8" fill="#14532d">EKS cluster · K8s 1.36</text>
+  <text x="459" y="494" text-anchor="middle" font-size="8" fill="#14532d">self-managed NG · IMDSv2 · bpffs</text>
+  <text x="459" y="507" text-anchor="middle" font-size="8" fill="#16a34a">ref: v1.2.0</text>
+  <text x="459" y="520" text-anchor="middle" font-size="8" fill="#15803d">github.com/urukube/…</text>
 
-  <!-- arrow stage 3 → custom-addons -->
-  <line x1="702" y1="413" x2="702" y2="434" stroke="#d97706" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+  <!-- terraform-module-essential-addons leaf -->
+  <rect x="553" y="447" width="171" height="82" rx="7" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <rect x="553" y="447" width="171" height="22" rx="7" fill="#15803d"/>
+  <text x="638" y="464" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">terraform-module-essential-addons</text>
+  <text x="638" y="481" text-anchor="middle" font-size="8" fill="#14532d">CoreDNS · VPC CNI · EBS CSI</text>
+  <text x="638" y="494" text-anchor="middle" font-size="8" fill="#14532d">LB Controller · Autoscaler</text>
+  <text x="638" y="507" text-anchor="middle" font-size="8" fill="#16a34a">ref: v1.0.1</text>
+  <text x="638" y="520" text-anchor="middle" font-size="8" fill="#15803d">github.com/urukube/…</text>
 
-  <!-- arrow stage 4 → argocd-configuration -->
-  <line x1="907" y1="413" x2="907" y2="434" stroke="#e11d48" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+  <!-- orchestrator-custom-addons leaf -->
+  <rect x="732" y="447" width="171" height="82" rx="7" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+  <rect x="732" y="447" width="171" height="22" rx="7" fill="#b45309"/>
+  <text x="817" y="464" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">orchestrator-custom-addons</text>
+  <text x="817" y="481" text-anchor="middle" font-size="8" fill="#431607">Istio · ArgoCD · Crossplane</text>
+  <text x="817" y="494" text-anchor="middle" font-size="8" fill="#431607">ESO · Prometheus · Kiali</text>
+  <text x="817" y="507" text-anchor="middle" font-size="8" fill="#d97706">ref: v1.3.1</text>
+  <text x="817" y="520" text-anchor="middle" font-size="8" fill="#b45309">github.com/urukube/…</text>
 
-  <!-- ══ RELEASE-WORKFLOW ══ -->
-  <rect x="1092" y="56" width="100" height="462" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
-  <rect x="1092" y="56" width="100" height="24" rx="8" fill="#15803d"/>
-  <text x="1142" y="73" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">release-workflow</text>
-  <text x="1142" y="94" text-anchor="middle" font-size="8" font-weight="600" fill="#14532d">Shared by all repos</text>
-  <text x="1142" y="108" text-anchor="middle" font-size="8" fill="#16a34a">Semantic versioning</text>
-  <text x="1142" y="122" text-anchor="middle" font-size="8" fill="#16a34a">Conventional Commits</text>
-  <line x1="1142" y1="132" x2="1142" y2="146" stroke="#16a34a" stroke-width="1"/>
-  <text x="1142" y="158" text-anchor="middle" font-size="8" font-weight="600" fill="#14532d">version.yml</text>
-  <text x="1142" y="172" text-anchor="middle" font-size="8" fill="#16a34a">workflow_call entry</text>
-  <text x="1142" y="185" text-anchor="middle" font-size="8" fill="#16a34a">point for all repos</text>
-  <line x1="1142" y1="194" x2="1142" y2="208" stroke="#16a34a" stroke-width="1"/>
-  <text x="1142" y="220" text-anchor="middle" font-size="8" font-weight="600" fill="#14532d">action.yml</text>
-  <text x="1142" y="234" text-anchor="middle" font-size="8" fill="#16a34a">Composite action</text>
-  <text x="1142" y="247" text-anchor="middle" font-size="8" fill="#16a34a">semantic-release</text>
-  <line x1="1142" y1="256" x2="1142" y2="270" stroke="#16a34a" stroke-width="1"/>
-  <text x="1142" y="282" text-anchor="middle" font-size="8" font-weight="600" fill="#14532d">Trigger</text>
-  <text x="1142" y="296" text-anchor="middle" font-size="8" fill="#16a34a">workflow_run on CI</text>
-  <text x="1142" y="309" text-anchor="middle" font-size="8" fill="#16a34a">Failed CI blocks</text>
-  <text x="1142" y="322" text-anchor="middle" font-size="8" fill="#16a34a">the release</text>
-  <line x1="1142" y1="330" x2="1142" y2="344" stroke="#16a34a" stroke-width="1"/>
-  <text x="1142" y="360" text-anchor="middle" font-size="8" font-style="italic" fill="#059669">All repos call:</text>
-  <text x="1142" y="374" text-anchor="middle" font-size="8" font-style="italic" fill="#059669">urukube/release-</text>
-  <text x="1142" y="387" text-anchor="middle" font-size="8" font-style="italic" fill="#059669">workflow/.github/</text>
-  <text x="1142" y="400" text-anchor="middle" font-size="8" font-style="italic" fill="#059669">workflows/</text>
-  <text x="1142" y="413" text-anchor="middle" font-size="8" font-style="italic" fill="#059669">version.yml@v1</text>
+  <!-- orchestrator-eso-config leaf -->
+  <rect x="911" y="447" width="171" height="82" rx="7" fill="#eef2ff" stroke="#4338ca" stroke-width="2"/>
+  <rect x="911" y="447" width="171" height="22" rx="7" fill="#4338ca"/>
+  <text x="996" y="464" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">orchestrator-eso-config</text>
+  <text x="996" y="481" text-anchor="middle" font-size="8" fill="#312e81">ClusterSecretStore</text>
+  <text x="996" y="494" text-anchor="middle" font-size="8" fill="#312e81">ExternalSecrets · ESO v1 API</text>
+  <text x="996" y="507" text-anchor="middle" font-size="8" fill="#4338ca">ref: v1.0.1</text>
+  <text x="996" y="520" text-anchor="middle" font-size="8" fill="#4338ca">github.com/urukube/…</text>
+
+  <!-- argocd-configuration leaf -->
+  <rect x="1090" y="447" width="196" height="82" rx="7" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
+  <rect x="1090" y="447" width="196" height="22" rx="7" fill="#be123c"/>
+  <text x="1188" y="464" text-anchor="middle" font-size="9" font-weight="700" fill="#ffffff">argocd-configuration</text>
+  <text x="1188" y="481" text-anchor="middle" font-size="8" fill="#881337">ApplicationSet: platform-custom-xrds</text>
+  <text x="1188" y="494" text-anchor="middle" font-size="8" fill="#881337">kubectl provider only</text>
+  <text x="1188" y="507" text-anchor="middle" font-size="8" fill="#e11d48">ref: v1.2.0</text>
+  <text x="1188" y="520" text-anchor="middle" font-size="8" fill="#be123c">github.com/urukube/…</text>
+
+  <!-- arrows: stage → leaf modules -->
+  <!-- ① → secret-mgmt leaf -->
+  <line x1="125" y1="411" x2="101" y2="445" stroke="#0f766e" stroke-width="1.5" marker-end="url(#arr-teal)"/>
+  <!-- ② → networking leaf + eks leaf -->
+  <line x1="335" y1="411" x2="280" y2="445" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <line x1="335" y1="411" x2="459" y2="445" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <!-- ③ → essential-addons leaf -->
+  <line x1="545" y1="411" x2="638" y2="445" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <!-- ④ → custom-addons leaf -->
+  <line x1="755" y1="411" x2="817" y2="445" stroke="#d97706" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+  <!-- ⑤ → eso-config leaf -->
+  <line x1="965" y1="411" x2="996" y2="445" stroke="#4338ca" stroke-width="1.5" marker-end="url(#arr-indigo)"/>
+  <!-- ⑥ → argocd-config leaf -->
+  <line x1="1177" y1="411" x2="1188" y2="445" stroke="#e11d48" stroke-width="1.5" marker-end="url(#arr-rose)"/>
+
+  <!-- ══ RELEASE-WORKFLOW sidebar ══ -->
+  <rect x="1300" y="56" width="96" height="474" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <rect x="1300" y="56" width="96" height="24" rx="8" fill="#15803d"/>
+  <text x="1348" y="73" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">release-workflow</text>
+  <text x="1348" y="94" text-anchor="middle" font-size="8" font-weight="600" fill="#14532d">Shared by all repos</text>
+  <text x="1348" y="108" text-anchor="middle" font-size="8" fill="#16a34a">Semantic versioning</text>
+  <text x="1348" y="122" text-anchor="middle" font-size="8" fill="#16a34a">Conventional Commits</text>
+  <line x1="1348" y1="132" x2="1348" y2="146" stroke="#16a34a" stroke-width="1"/>
+  <text x="1348" y="158" text-anchor="middle" font-size="8" font-weight="600" fill="#14532d">version.yml</text>
+  <text x="1348" y="172" text-anchor="middle" font-size="8" fill="#16a34a">workflow_call entry</text>
+  <text x="1348" y="185" text-anchor="middle" font-size="8" fill="#16a34a">point for all repos</text>
+  <line x1="1348" y1="194" x2="1348" y2="208" stroke="#16a34a" stroke-width="1"/>
+  <text x="1348" y="220" text-anchor="middle" font-size="8" font-weight="600" fill="#14532d">action.yml</text>
+  <text x="1348" y="234" text-anchor="middle" font-size="8" fill="#16a34a">Composite action</text>
+  <text x="1348" y="247" text-anchor="middle" font-size="8" fill="#16a34a">semantic-release</text>
+  <line x1="1348" y1="256" x2="1348" y2="270" stroke="#16a34a" stroke-width="1"/>
+  <text x="1348" y="282" text-anchor="middle" font-size="8" font-weight="600" fill="#14532d">Trigger</text>
+  <text x="1348" y="296" text-anchor="middle" font-size="8" fill="#16a34a">workflow_run on CI</text>
+  <text x="1348" y="309" text-anchor="middle" font-size="8" fill="#16a34a">Failed CI blocks</text>
+  <text x="1348" y="322" text-anchor="middle" font-size="8" fill="#16a34a">the release</text>
+  <line x1="1348" y1="330" x2="1348" y2="344" stroke="#16a34a" stroke-width="1"/>
+  <text x="1348" y="360" text-anchor="middle" font-size="8" font-style="italic" fill="#059669">All repos call:</text>
+  <text x="1348" y="374" text-anchor="middle" font-size="8" font-style="italic" fill="#059669">urukube/release-</text>
+  <text x="1348" y="387" text-anchor="middle" font-size="8" font-style="italic" fill="#059669">workflow/.github/</text>
+  <text x="1348" y="400" text-anchor="middle" font-size="8" font-style="italic" fill="#059669">workflows/</text>
+  <text x="1348" y="413" text-anchor="middle" font-size="8" font-style="italic" fill="#059669">version.yml@v1</text>
 
   <!-- dashed arrow orchestrator → release-workflow -->
-  <line x1="740" y1="84" x2="1090" y2="84" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-green)"/>
-  <text x="910" y="78" text-anchor="middle" font-size="8" fill="#16a34a">workflow_run (CI done) → release</text>
+  <line x1="841" y1="84" x2="1298" y2="84" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-green)"/>
+  <text x="1065" y="78" text-anchor="middle" font-size="8" fill="#16a34a">workflow_run (CI done) → release</text>
 
   <!-- ══ LEGEND ══ -->
-  <rect x="16" y="536" width="1062" height="116" rx="7" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="30" y="556" font-size="10" font-weight="700" fill="#111827">Legend</text>
+  <rect x="16" y="545" width="1270" height="130" rx="7" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="30" y="565" font-size="10" font-weight="700" fill="#111827">Legend</text>
 
-  <rect x="30" y="564" width="12" height="12" rx="2" fill="#4f46e5"/>
-  <text x="48" y="575" font-size="9" fill="#374151">Entry-point calling repo (no TF code — only .tfvars + workflow triggers)</text>
+  <rect x="30" y="573" width="12" height="12" rx="2" fill="#4f46e5"/>
+  <text x="48" y="584" font-size="9" fill="#374151">Entry-point calling repo (no TF code — only .tfvars + workflow triggers)</text>
 
-  <rect x="30" y="582" width="12" height="12" rx="2" fill="#7c3aed"/>
-  <text x="48" y="593" font-size="9" fill="#374151">Reusable workflow repo (checked out at runtime; owns all Terraform logic in subdirectories)</text>
+  <rect x="30" y="591" width="12" height="12" rx="2" fill="#7c3aed"/>
+  <text x="48" y="602" font-size="9" fill="#374151">Reusable workflow repo (checked out at runtime; owns all Terraform logic in subdirectories)</text>
 
-  <rect x="30" y="600" width="12" height="12" rx="2" fill="#15803d"/>
-  <text x="48" y="611" font-size="9" fill="#374151">Leaf Terraform module repos (pinned via git source ref=vX.Y.Z; consumed by orchestrator-plane-setup only)</text>
+  <rect x="30" y="609" width="12" height="12" rx="2" fill="#15803d"/>
+  <text x="48" y="620" font-size="9" fill="#374151">Leaf Terraform module repos (pinned via git source ref=vX.Y.Z; consumed by orchestrator-plane-setup only)</text>
 
-  <line x1="400" y1="570" x2="436" y2="570" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-purple)"/>
-  <text x="442" y="574" font-size="9" fill="#374151">workflow_call (GitHub Actions)</text>
+  <line x1="480" y1="579" x2="516" y2="579" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-purple)"/>
+  <text x="522" y="583" font-size="9" fill="#374151">workflow_call (GitHub Actions)</text>
 
-  <line x1="400" y1="590" x2="436" y2="590" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-green)"/>
-  <text x="442" y="594" font-size="9" fill="#374151">Terraform module source (git clone at plan time)</text>
+  <line x1="480" y1="599" x2="516" y2="599" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <text x="522" y="603" font-size="9" fill="#374151">Terraform module source (git clone at plan time)</text>
 
-  <line x1="400" y1="610" x2="436" y2="610" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-slate)"/>
-  <text x="442" y="614" font-size="9" fill="#374151">S3 remote state read (data.terraform_remote_state — stages 2/3/4 read from stage 1)</text>
+  <line x1="480" y1="619" x2="516" y2="619" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-slate)"/>
+  <text x="522" y="623" font-size="9" fill="#374151">S3 remote state read (data.terraform_remote_state — stages ③–⑥ all read from ② eks-infra)</text>
 
-  <line x1="730" y1="570" x2="766" y2="570" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-green)"/>
-  <text x="772" y="574" font-size="9" fill="#374151">workflow_run (CI completion triggers release)</text>
+  <line x1="870" y1="579" x2="906" y2="579" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-green)"/>
+  <text x="912" y="583" font-size="9" fill="#374151">workflow_run (CI completion triggers release)</text>
 
-  <!-- execution order note -->
-  <text x="30" y="634" font-size="9" font-weight="700" fill="#374151">Execution order (provision):</text>
-  <text x="180" y="634" font-size="9" fill="#6b7280">① eks-infra  →  ② eks-essential-addons  →  ③ orchestrator-custom-addons  →  ④ argocd-configuration</text>
-  <text x="30" y="650" font-size="9" font-weight="700" fill="#374151">Destroy order (reverse):</text>
-  <text x="180" y="650" font-size="9" fill="#6b7280">④ argocd-configuration  →  ③ orchestrator-custom-addons  →  ② eks-essential-addons  →  ① eks-infra</text>
+  <!-- execution order notes -->
+  <text x="30" y="647" font-size="9" font-weight="700" fill="#374151">Execution order (provision):</text>
+  <text x="190" y="647" font-size="9" fill="#6b7280">① orchestrator-secret-mgmt  →  ② eks-infra  →  ③ eks-essential-addons  →  ④ orchestrator-custom-addons  →  ⑤ eso-configuration  →  ⑥ argocd-configuration</text>
+  <text x="30" y="663" font-size="9" font-weight="700" fill="#374151">Destroy order (reverse):</text>
+  <text x="190" y="663" font-size="9" fill="#6b7280">⑥ argocd-configuration  →  ⑤ eso-configuration  →  ④ orchestrator-custom-addons  →  ③ eks-essential-addons  →  ② eks-infra  →  ① orchestrator-secret-mgmt</text>
 </svg>
