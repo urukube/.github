@@ -139,9 +139,9 @@ Contains six subdirectory root modules executed in strict sequential order:
 3. `eks-essential-addons/` → reads `eks-infra` S3 state; calls `terraform-module-essential-addons @v1.0.1`
 4. `orchestrator-custom-addons/` → reads `eks-infra` S3 state; calls `orchestrator-custom-addons @v1.3.2`; installs ESO Helm chart (CRDs registered here)
 5. `eso-configuration/` → reads `eks-infra` S3 state; calls `orchestrator-eso-config @v1.0.1`; creates ClusterSecretStore + ExternalSecrets (must run AFTER orchestrator-custom-addons so ESO CRDs are registered)
-6. `argocd-configuration/` → reads `eks-infra` S3 state; calls `argocd-configuration @v1.3.0`; ApplicationSet + platform-tenant-registry Application
+6. `argocd-configuration/` → reads `eks-infra` S3 state; calls `argocd-configuration @v1.3.1`; ApplicationSet + platform-tenant-registry Application
 
-- Calls `urukube/terraform-module-networking` at `ref=v1.1.2`, `urukube/terraform-module-eks` at `ref=v1.2.0`, `urukube/terraform-module-essential-addons` at `ref=v1.0.1`, `urukube/orchestrator-custom-addons` at `ref=v1.3.2`, `urukube/orchestrator-eso-config` at `ref=v1.0.1`, `urukube/argocd-configuration` at `ref=v1.3.0`, and `urukube/orchestrator-secret-management` at `ref=v1.2.1` — update these pins when consuming new releases
+- Calls `urukube/terraform-module-networking` at `ref=v1.1.2`, `urukube/terraform-module-eks` at `ref=v1.2.0`, `urukube/terraform-module-essential-addons` at `ref=v1.0.1`, `urukube/orchestrator-custom-addons` at `ref=v1.3.2`, `urukube/orchestrator-eso-config` at `ref=v1.0.1`, `urukube/argocd-configuration` at `ref=v1.3.1`, and `urukube/orchestrator-secret-management` at `ref=v1.2.1` — update these pins when consuming new releases
 - `CKV_TF_1` and `CKV_TF_2` checkov skips added on all module blocks — using version tags rather than commit hashes
 - `eks-essential-addons` is built and wired into both `main.yml` and `destroy.yml`; `eks-custom-addons` is not yet built
 - `orchestrator-secret-management` has no `data.tf` or `get_env.sh` — it is AWS-only with no Kubernetes or remote state dependency. Secret values are scoped to the step via `env:` (not job-level `GITHUB_ENV`) to avoid leaking `TF_VAR_secret_values` to subsequent Terraform steps
@@ -244,7 +244,7 @@ Crossplane XRD package that provides a self-service S3 bucket golden path. Auto-
 - Composed resources: `Bucket`, `BucketServerSideEncryptionConfiguration` (AES256, always on), `BucketVersioning`, `BucketPublicAccessBlock` (all four flags, always blocked)
 - Cross-account: Composition dynamically creates one `aws.upbound.io/v1beta1 ProviderConfig` per claim, named after the composite, that chains `orchestrator-eks-crossplane` IRSA → `arn:aws:iam::<awsAccountId>:role/urukube-crossplane-role`
 - **IAM permissions for `urukube-crossplane-role`**: must be `s3:*` — the Upbound S3 provider reads many bucket attributes on every reconcile pass (ACL, CORS, website, logging, replication, etc.); a minimal action list will fail with AccessDenied during observe
-- **EnvironmentConfig tagging NOT YET WIRED**: Crossplane v1.19 CRD schema does not include `spec.environment` or `FromEnvironmentFieldPath` in `spec.resources[].patches[].type` enum — applying these causes a sync failure. EnvironmentConfig patching requires Composition Functions (Pipeline mode, `function-environment-configs`). `platform-tenant-registry` EnvironmentConfigs are on the cluster and ready; wiring them into Compositions is deferred until Pipeline mode is adopted.
+- **EnvironmentConfig tagging is wired via Pipeline mode**: Composition uses `spec.mode: Pipeline` with two steps — `function-environment-configs:v0.6.0` (resolves `org-defaults` + BU EnvironmentConfig by `bu-id` label) then `function-patch-and-transform:v0.10.7` (stamps tags on the bucket via `FromEnvironmentFieldPath`). Functions are declared in `functions.yaml` in the same repo and installed cluster-wide by ArgoCD. `v0.7.x` of `function-environment-configs` is incompatible with Crossplane v1.19 — pin to `v0.6.0`. Resources mode does not support `FromEnvironmentFieldPath` (not in the Crossplane v1.19 CRD schema enum).
 
 #### `platform-tenant-registry` repo → `https://github.com/urukube/platform-tenant-registry`
 Registry of Crossplane `EnvironmentConfig` resources for org-wide and per-BU metadata. Synced to the orchestrator cluster by a dedicated ArgoCD Application (not the SCM generator ApplicationSet — do NOT add `platform-custom-xrds` GitHub topic to this repo).
@@ -254,7 +254,7 @@ Registry of Crossplane `EnvironmentConfig` resources for org-wide and per-BU met
 - Each BU EnvironmentConfig **must** have label `bu-id: <BU-ID>` (e.g. `bu-id: BU001`) — this is what the Composition's label selector matches against `spec.parameters.buId` from the claim
 - Onboarding a new BU = add one file under `tenants/` with the right label; XRDs and Compositions need no changes
 - Two-layer merge: Compositions always include `org-defaults` (Reference) + BU config (Selector by `bu-id` label); later entry wins on conflict
-- ArgoCD Application defined in `argocd-configuration` module — syncs from `main`, path `.`, destination `crossplane-system`
+- ArgoCD Application defined in `argocd-configuration` module — syncs from `main`, path `.`, `directory.recurse: true`, destination `crossplane-system`
 - Pilot BU: `tenants/ads-platform/` → `buId: BU001`, `buName: ads_platform`
 
 ---
