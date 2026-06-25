@@ -93,7 +93,7 @@ Key design decisions:
 
 Outputs consumed by the EKS module: `eks_node_subnet_ids`, `resource_subnet_ids`, `node_security_group_id`, `aws_resources_security_group_id`, `vpc_id`
 
-- Lock file (`.terraform.lock.hcl`) is **committed** in this module (pinned to `6.51.0`)
+- Lock file (`.terraform.lock.hcl`) is **committed** in this module (pinned to `6.52.0`)
 - All 11 terraform tests pass (alb, nlb, security_groups, vpc, vpc_endpoints)
 
 #### `terraform-module-eks` repo → `https://github.com/urukube/terraform-module-eks`
@@ -102,7 +102,7 @@ Terraform module for provisioning EKS clusters for the Orchestrator and BU workl
 - Uses `terraform-aws-modules/eks ~> 21.0` with AWS provider `>= 6.42.0`
 - **Self-managed node groups** are the current default (`is_eks_managed_node_group = false`)
 - EKS managed node group path (`is_eks_managed_node_group = true`) is stubbed with a TODO — not yet implemented
-- Lock file (`.terraform.lock.hcl`) is **committed** in this module (pinned to `6.51.0`)
+- Lock file (`.terraform.lock.hcl`) is **committed** in this module (pinned to `6.52.0`)
 
 Key design decisions:
 - A dedicated `aws_launch_template` (`lt.tf`) is wired into the self-managed node group — it owns the EC2-level config: EBS encryption, IMDSv2 (`http_tokens = required`), CloudWatch monitoring, no public IP, security groups. The node group block owns bootstrap/userdata and ASG sizing only.
