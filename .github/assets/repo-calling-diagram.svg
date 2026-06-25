@@ -159,16 +159,16 @@
   <rect x="1076" y="195" width="202" height="216" rx="7" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
   <rect x="1076" y="195" width="202" height="22" rx="7" fill="#be123c"/>
   <text x="1177" y="211" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">⑥ argocd-configuration</text>
-  <text x="1177" y="232" text-anchor="middle" font-size="9" fill="#881337">Creates ArgoCD ApplicationSets</text>
+  <text x="1177" y="232" text-anchor="middle" font-size="9" fill="#881337">Creates ArgoCD Apps + ApplicationSets</text>
   <text x="1177" y="246" text-anchor="middle" font-size="9" fill="#9f1239">argocd-configuration-setup.tf</text>
   <text x="1177" y="263" text-anchor="middle" font-size="8" font-style="italic" fill="#e11d48">Reads eks-infra S3 state</text>
   <text x="1177" y="277" text-anchor="middle" font-size="8" font-style="italic" fill="#e11d48">Calls one TF module:</text>
   <text x="1177" y="291" text-anchor="middle" font-size="9" font-weight="600" fill="#881337">argocd-configuration @v1.2.0</text>
-  <text x="1177" y="307" text-anchor="middle" font-size="8" fill="#9f1239">ApplicationSet: platform-custom-xrds</text>
-  <text x="1177" y="321" text-anchor="middle" font-size="8" fill="#9f1239">SCM Provider → scans GitHub org</text>
-  <text x="1177" y="335" text-anchor="middle" font-size="8" fill="#9f1239">for repos tagged platform-custom-xrds</text>
-  <text x="1177" y="349" text-anchor="middle" font-size="8" fill="#9f1239">1 ArgoCD App per repo → syncs</text>
-  <text x="1177" y="363" text-anchor="middle" font-size="8" fill="#9f1239">XRDs/Compositions → crossplane-system</text>
+  <text x="1177" y="307" text-anchor="middle" font-size="8" font-weight="700" fill="#be123c">Creates 2 ArgoCD resources:</text>
+  <text x="1177" y="321" text-anchor="middle" font-size="8" fill="#9f1239">① App: platform-tenant-registry</text>
+  <text x="1177" y="335" text-anchor="middle" font-size="8" fill="#9f1239">   (fixed repo → crossplane-system)</text>
+  <text x="1177" y="349" text-anchor="middle" font-size="8" fill="#9f1239">② AppSet: platform-custom-xrds</text>
+  <text x="1177" y="363" text-anchor="middle" font-size="8" fill="#9f1239">   (SCM topic scan → crossplane-system)</text>
   <text x="1177" y="379" text-anchor="middle" font-size="8" fill="#e11d48">S3 key: {env}/argocd-configuration</text>
   <text x="1177" y="395" text-anchor="middle" font-size="8" fill="#e11d48">destroy order: 1st (reverse)</text>
 
