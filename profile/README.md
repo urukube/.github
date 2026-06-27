@@ -12,6 +12,49 @@ This is operated by a **central platform team**, centrally funded, with BUs bill
 
 ## The Economic Story
 
+### The problem: cost centers that can't share
+
+Large organisations are split into Business Units, each with its own P&L, its own AWS account, its own engineering team, and its own budget. This independence is intentional — it keeps accountability clean and prevents one team's spending from bleeding into another's.
+
+But that independence creates a compounding infrastructure problem:
+
+- Each BU builds its own VPC, its own EKS cluster, its own security baseline — from scratch, every time
+- Standards diverge: one BU pins Kubernetes at 1.28, another at 1.32, a third skips IMDSv2 enforcement entirely
+- Security posture is inconsistent: compliance reviews become a per-BU audit instead of a platform-wide one
+- Platform engineers are hired and paid by each BU separately — the same problem solved four times over
+- There is no shared toolchain, no shared observability, no shared golden path — just sprawl
+
+The BUs are not connected. They cannot share a cluster (blast radius, billing, isolation). They will not accept a shared AWS account (cost attribution breaks down). A traditional "central infra" team that owns and operates shared clusters for everyone does not work here — it collapses accountability and becomes a bottleneck.
+
+### The design: shared control plane, isolated data plane
+
+This platform resolves the tension by separating **where decisions are made** from **where resources run**:
+
+```
+                    ┌─────────────────────────────────────┐
+                    │        Orchestrator Cluster          │
+                    │   (platform team · central budget)   │
+                    │                                      │
+                    │  Crossplane · ArgoCD · Backstage     │
+                    │  One control plane for all BUs       │
+                    └──────┬──────────┬──────────┬─────────┘
+                           │          │          │
+              sts:AssumeRole    sts:AssumeRole    sts:AssumeRole
+                           │          │          │
+               ┌───────────▼─┐  ┌─────▼───────┐  ┌▼────────────┐
+               │  BU #1 AWS  │  │  BU #2 AWS  │  │  BU #3 AWS  │
+               │   Account   │  │   Account   │  │   Account   │
+               │  (BU pays)  │  │  (BU pays)  │  │  (BU pays)  │
+               └─────────────┘  └─────────────┘  └─────────────┘
+```
+
+- BUs keep their own AWS accounts — cost attribution stays clean, billing is unchanged
+- The orchestrator assumes a cross-account IAM role into each BU's account only when provisioning — it never co-mingles credentials or resources
+- Each BU's VPC, EKS cluster, and S3 buckets are physically isolated in their own account; a failure in BU #2 cannot affect BU #1
+- The platform team owns and pays for exactly one thing: the orchestrator cluster that drives everything else
+
+### How costs scale
+
 ```
 BU #1 onboards → pays for the spine (foundation + orchestrator cluster + CRD platform)
 BU #2 onboards → rides the shared orchestrator, only pays for its own clusters
@@ -27,6 +70,19 @@ The orchestrator cluster is a flat tax on the platform team's budget. Every BU a
 | Orchestrator Cluster (PROD + DR) | Platform team — central budget | Flat — does not grow with BU count |
 | BU Dev Cluster | BU cost center | Linear — 1 cluster per BU |
 | BU Prod Cluster | BU cost center | Linear — 1 cluster per BU |
+
+### What each BU gains without losing autonomy
+
+| Without the platform | With the platform |
+|---|---|
+| Hire infra engineers per BU | BU focuses on product engineering |
+| 4–8 weeks to get a production cluster | Self-service in minutes via Backstage |
+| Inconsistent security baseline per BU | Guardrails enforced at the platform layer |
+| Compliance audits per BU, per quarter | One platform audit covers all BUs |
+| Each BU owns and operates its own toolchain | Shared ArgoCD, Crossplane, observability stack |
+| Cost sprawl — nobody knows the real per-BU number | Clean chargeback — BU pays exactly for what it runs |
+
+Onboarding a new BU is a single pull request: one `EnvironmentConfig` file in `platform-tenant-registry` with the BU's cost center, owner email, and BU ID. No infrastructure changes. No new tooling. The next claim they submit gets provisioned with the full org compliance baseline automatically applied.
 
 ---
 
