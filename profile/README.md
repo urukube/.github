@@ -82,6 +82,14 @@ Once a BU's clusters are provisioned, their developers work entirely through Git
 
 ---
 
+## Crossplane XRD Ecosystem
+
+![Platform XP Ecosystem](https://raw.githubusercontent.com/urukube/.github/master/.github/assets/platform-ecosystem.svg)
+
+> Crossplane concepts, shared pipeline, cross-account IRSA pattern, networking → EKS hand-off, and how to add new XRDs: [PLATFORM_ECOSYSTEM.md](https://github.com/urukube/.github/blob/master/.github/PLATFORM_ECOSYSTEM.md)
+
+---
+
 ## The Economic Story
 
 ```
