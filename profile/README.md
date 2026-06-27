@@ -10,6 +10,26 @@ This is operated by a **central platform team**, centrally funded, with BUs bill
 
 ---
 
+## The Economic Story
+
+```
+BU #1 onboards → pays for the spine (foundation + orchestrator cluster + CRD platform)
+BU #2 onboards → rides the shared orchestrator, only pays for its own clusters
+BU #3 onboards → marginal cost falls further
+...
+Cost per tenant trends DOWN as adoption grows
+```
+
+The orchestrator cluster is a flat tax on the platform team's budget. Every BU after the first rides existing infrastructure — Backstage, Crossplane, and ArgoCD are already running and ready to provision the next tenant on demand.
+
+| Resource | Who pays | Scaling behaviour |
+|---|---|---|
+| Orchestrator Cluster (PROD + DR) | Platform team — central budget | Flat — does not grow with BU count |
+| BU Dev Cluster | BU cost center | Linear — 1 cluster per BU |
+| BU Prod Cluster | BU cost center | Linear — 1 cluster per BU |
+
+---
+
 ## How It Works
 
 ![urukube IDP — Provisioning and Delivery Flows](https://raw.githubusercontent.com/urukube/.github/master/.github/assets/idp-flow.svg)
@@ -87,26 +107,6 @@ Once a BU's clusters are provisioned, their developers work entirely through Git
 ![Platform XP Ecosystem](https://raw.githubusercontent.com/urukube/.github/master/.github/assets/platform-ecosystem.svg)
 
 > Crossplane concepts, shared pipeline, cross-account IRSA pattern, networking → EKS hand-off, and how to add new XRDs: [PLATFORM_ECOSYSTEM.md](https://github.com/urukube/.github/blob/master/.github/PLATFORM_ECOSYSTEM.md)
-
----
-
-## The Economic Story
-
-```
-BU #1 onboards → pays for the spine (foundation + orchestrator cluster + CRD platform)
-BU #2 onboards → rides the shared orchestrator, only pays for its own clusters
-BU #3 onboards → marginal cost falls further
-...
-Cost per tenant trends DOWN as adoption grows
-```
-
-The orchestrator cluster is a flat tax on the platform team's budget. Every BU after the first rides existing infrastructure — Backstage, Crossplane, and ArgoCD are already running and ready to provision the next tenant on demand.
-
-| Resource | Who pays | Scaling behaviour |
-|---|---|---|
-| Orchestrator Cluster (PROD + DR) | Platform team — central budget | Flat — does not grow with BU count |
-| BU Dev Cluster | BU cost center | Linear — 1 cluster per BU |
-| BU Prod Cluster | BU cost center | Linear — 1 cluster per BU |
 
 ---
 
